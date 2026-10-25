@@ -92,6 +92,20 @@ class LowSeverityResources(BaseModel):
     videos: list[Resource]
 
 
+class ServiceLocation(BaseModel):
+    name: str
+    address: str
+    phone: str | None = None
+    distance_miles: float
+    latitude: float
+    longitude: float
+
+
+class ServiceLocationsResponse(BaseModel):
+    location: str
+    results: list[ServiceLocation]
+
+
 class CostEstimate(BaseModel):
     currency: str
     estimated_repair_cost: float | None

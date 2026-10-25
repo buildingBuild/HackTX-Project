@@ -153,25 +153,22 @@ yellow.
 
 ### `GET /service-locations`
 
-Status: Planned
+Status: Implemented
 
 Query parameters:
 
-- `customer_id`
-- `service_type`: `repair`, `dealer`, or `towing`
-- `limit`: optional
+- `location`: a city or address string such as `Austin, TX`
 
-Returns nearby service locations using the location stored for the customer.
+Returns up to five nearby Toyota service locations using OpenStreetMap data.
 
 Each result includes:
 
 - `name`
 - `address`
 - `distance_miles`
-- `rating`
 - `phone`
-- `website`
-- `maps_url`
+- `latitude`
+- `longitude`
 
 The frontend calls this after the main diagnostic result or mocked claim step. It
 shows a separate location loading state.
@@ -275,9 +272,9 @@ options**. Then continue automatically to the location step.
 ### 8. Repair locations
 
 After the high-severity result or mocked claim step is ready, the frontend calls
-`GET /service-locations` using the customer ID and appropriate service type. The
-page then shows nearby repair facilities, dealerships, or towing options.
+`GET /service-locations` using the location already loaded from the customer. The
+page then shows nearby Toyota service locations.
 
-Location results should appear as cards with distance, rating, address, phone,
-website, and map link. This panel loads independently so it does not delay the
-diagnosis or insurance result.
+Location results should appear as cards with distance, address, and phone. The
+frontend can create a map link from the returned latitude and longitude. This
+panel loads independently so it does not delay the diagnosis or insurance result.

@@ -13,7 +13,9 @@ from schemas import (
     DiagnosticSessionRequest,
     DiagnosticSessionResponse,
     HealthResponse,
+    ServiceLocationsResponse,
 )
+from service_locations import find_service_locations
 
 
 app = FastAPI(title="Agent Backend", version="0.1.0")
@@ -89,6 +91,21 @@ async def prepare_3d_visualization(customer_id: str) -> None:
     customer = get_customer_information(customer_id)
     vehicle_model = customer.vehicle_model
     mileage = customer.mileage
+
+
+@app.get("/service-locations")
+def get_service_locations(location: str) -> ServiceLocationsResponse:
+    try:
+        results = find_service_locations(location)
+    except ValueError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except OSError as error:
+        raise HTTPException(
+            status_code=502,
+            detail="The service-location provider is unavailable",
+        ) from error
+
+    return ServiceLocationsResponse(location=location, results=results)
 
 
 @app.get("/health")
