@@ -38,6 +38,16 @@ class CustomerInformation(BaseModel):
     location: str
 
 
+class CustomerResponse(BaseModel):
+    id: str
+    name: str
+    description: str
+    insurance_level: InsuranceLevel
+    vehicle_model: str
+    mileage: int
+    location: str
+
+
 class DiagnosticContext(BaseModel):
     issue_code: str
     vehicle_model: str
@@ -80,6 +90,20 @@ class Resource(BaseModel):
 class LowSeverityResources(BaseModel):
     articles: list[Resource]
     videos: list[Resource]
+
+
+class ServiceLocation(BaseModel):
+    name: str
+    address: str
+    phone: str | None = None
+    distance_miles: float
+    latitude: float
+    longitude: float
+
+
+class ServiceLocationsResponse(BaseModel):
+    location: str
+    results: list[ServiceLocation]
 
 
 class CostEstimate(BaseModel):

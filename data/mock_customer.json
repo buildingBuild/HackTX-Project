@@ -118,5 +118,25 @@
       "technician_findings": "No oil leak or engine fault was found; this is scheduled maintenance."
     },
     "location": "Round Rock, TX"
+  },
+  {
+    "id": "c07",
+    "name": "Advaith",
+    "description": "A software engineer who uses his minivan for family trips and daily commuting.",
+    "vehicle_model": "2021 Toyota Sienna XLE",
+    "mileage": 76418,
+    "insurance_level": "platinum",
+    "issue": {
+      "description": "The braking system detected an abnormal loss of hydraulic pressure in the brake actuator accumulator.",
+      "code": "C1391",
+      "severity": "high"
+    },
+    "technician_diagnosis": {
+      "confirmed_diagnosis": "The brake actuator and accumulator assembly has an internal hydraulic leak and requires replacement.",
+      "estimated_repair_cost": 3100,
+      "currency": "USD",
+      "technician_findings": "Brake pressure drops after the vehicle is turned off, and there is no evidence of collision damage, neglect, or contaminated brake fluid."
+    },
+    "location": "Austin, TX"
   }
 ]

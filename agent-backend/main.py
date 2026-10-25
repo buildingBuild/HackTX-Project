@@ -1,4 +1,6 @@
-from fastapi import FastAPI
+import httpx
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from helper import (
     get_customer_information,
@@ -8,21 +10,53 @@ from helper import (
 )
 from low_severity_resources import get_low_severity_resources
 from schemas import (
+    CustomerResponse,
     DiagnosticContext,
     DiagnosticSessionRequest,
     DiagnosticSessionResponse,
     HealthResponse,
+    ServiceLocationsResponse,
 )
+from service_locations import find_service_locations
 
 
 app = FastAPI(title="Agent Backend", version="0.1.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+@app.get("/customers/{customer_id}")
+async def get_customer(customer_id: str) -> CustomerResponse:
+    try:
+        customer = get_customer_information(customer_id)
+    except ValueError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+
+    return CustomerResponse(
+        id=customer.id,
+        name=customer.name,
+        description=customer.description,
+        insurance_level=customer.insurance_level,
+        vehicle_model=customer.vehicle_model,
+        mileage=customer.mileage,
+        location=customer.location,
+    )
 
 
 @app.post("/diagnostic-sessions")
 async def create_diagnostic_session(
     request: DiagnosticSessionRequest,
 ) -> DiagnosticSessionResponse:
-    customer = get_customer_information(request.customer_id)
+    try:
+        customer = get_customer_information(request.customer_id)
+    except ValueError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+
     diagnostic = request.diagnostic or DiagnosticContext(
         issue_code=customer.issue.code,
         vehicle_model=customer.vehicle_model,
@@ -31,10 +65,16 @@ async def create_diagnostic_session(
     severity = customer.issue.severity
 
     if severity == "low":
-        resources = await get_low_severity_resources(
-            issue=customer.issue.description,
-            vehicle_model=diagnostic.vehicle_model,
-        )
+        try:
+            resources = await get_low_severity_resources(
+                issue=customer.issue.description,
+                vehicle_model=diagnostic.vehicle_model,
+            )
+        except (httpx.HTTPError, KeyError) as error:
+            raise HTTPException(
+                status_code=502,
+                detail="The resource search provider is unavailable",
+            ) from error
         response = DiagnosticSessionResponse(
             severity="low",
             resources=resources,
@@ -51,11 +91,17 @@ async def create_diagnostic_session(
         }
     )
 
-    recommendations = await give_recommendations(
-        diagnostic_context=diagnostic_context,
-        customer_context=customer_context,
-        insurance_context=insurance_context,
-    )
+    try:
+        recommendations = await give_recommendations(
+            diagnostic_context=diagnostic_context,
+            customer_context=customer_context,
+            insurance_context=insurance_context,
+        )
+    except (httpx.HTTPError, RuntimeError, KeyError) as error:
+        raise HTTPException(
+            status_code=502,
+            detail="The diagnostic agent is unavailable",
+        ) from error
 
     response = DiagnosticSessionResponse(
         severity="high",
@@ -70,6 +116,21 @@ async def prepare_3d_visualization(customer_id: str) -> None:
     customer = get_customer_information(customer_id)
     vehicle_model = customer.vehicle_model
     mileage = customer.mileage
+
+
+@app.get("/service-locations")
+def get_service_locations(location: str) -> ServiceLocationsResponse:
+    try:
+        results = find_service_locations(location)
+    except ValueError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except OSError as error:
+        raise HTTPException(
+            status_code=502,
+            detail="The service-location provider is unavailable",
+        ) from error
+
+    return ServiceLocationsResponse(location=location, results=results)
 
 
 @app.get("/health")
