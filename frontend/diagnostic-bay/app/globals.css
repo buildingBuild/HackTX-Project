@@ -461,3 +461,31 @@ body{font-size:14px;-webkit-font-smoothing:antialiased}
   #screen-select{display:flex;align-items:center;justify-content:center}
   .ss{flex:0 1 1080px;max-width:1080px;margin:0}
 }
+
+/* ===== Low-severity resources ===== */
+.res-videos{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.rv{display:grid;gap:6px;text-decoration:none;color:inherit;min-width:0}
+.rv-th{position:relative;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,#25252a,#151517);border:1px solid var(--line)}
+.rv-th img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .25s}
+.rv:hover .rv-th img{transform:scale(1.04)}
+.rv-play{position:absolute;inset:0;margin:auto;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);display:grid;place-items:center}
+.rv-play svg{width:14px;height:14px;color:#fff;margin-left:2px}
+.rv-th em{position:absolute;right:6px;bottom:6px;font-style:normal;font-family:var(--f-mono);font-size:.66rem;background:rgba(0,0,0,.75);padding:1px 5px;border-radius:4px}
+.rv b{font-weight:500;font-size:.86rem;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rv small{color:var(--dim);font-size:.75rem}
+.res-list{display:grid;border-top:1px solid var(--line)}
+.ra{display:grid;gap:4px;padding:13px 2px;border-bottom:1px solid var(--line);text-decoration:none;color:inherit}
+.ra:hover b{color:#fff;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--line2)}
+.ra-src{display:flex;align-items:center;gap:7px;color:var(--dim);font-size:.74rem}
+.ra-src img{width:14px;height:14px;border-radius:3px;background:#2a2a2d}
+.ra b{font-weight:500;font-size:.92rem;line-height:1.35;color:#e8e8ea;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ra small{color:var(--muted);font-size:.8rem;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.res-videos{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:4px;scrollbar-width:none}
+.res-videos::-webkit-scrollbar{display:none}
+.rv{flex:0 0 200px;scroll-snap-align:start}
+
+/* ===== Toyota red primary buttons ===== */
+:root{--toyota:#eb0a1e;--toyota-hover:#ff2a3b}
+.btn.primary,.ss-go,.sr-go{background:var(--toyota);border-color:var(--toyota);color:#fff}
+.btn.primary:hover,.ss-go:hover,.sr-go:hover{background:var(--toyota-hover);border-color:var(--toyota-hover)}
+.btn.primary[disabled],.ss-go[disabled]{opacity:.5}

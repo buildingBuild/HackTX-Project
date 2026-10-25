@@ -26,7 +26,7 @@ export function SelectScreen({ bay }: { bay: Bay }) {
     <section className="screen" id="screen-select">
       <div className="ss">
         <div className="ss-left">
-        <div className="brand ss-brand"><div className="brand-mark" aria-hidden="true">{Icon.mark}</div><span>Diagnostic Bay</span></div>
+        <div className="brand ss-brand"><div className="brand-mark" aria-hidden="true">{Icon.mark}</div><span>Drivn</span></div>
 
         <div className="ss-head">
           <h1>Who&rsquo;s in the bay?</h1>

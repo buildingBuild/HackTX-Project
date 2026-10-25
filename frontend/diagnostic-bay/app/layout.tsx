@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Diagnostic Bay',
+  title: 'Drivn',
   description: 'Connect a car over OBD, inspect it in 3D, and get a severity-based diagnosis, insurance costs and a claim draft.',
 };
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover' };

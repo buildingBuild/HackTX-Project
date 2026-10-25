@@ -9,6 +9,8 @@ const TAB_TITLE: Record<string, string> = {
   diagnosis: 'Diagnosis', insurance: 'Insurance', nearby: 'Nearby help', claim: 'Claim', vehicle: 'Vehicle',
 };
 
+const hostOf = (url: string) => { try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return ''; } };
+
 function Back({ bay, tab }: { bay: Bay; tab: Tab }) {
   return <button className="back" onClick={() => bay.setTab('home')}>{Icon.back}{TAB_TITLE[tab]}</button>;
 }
@@ -124,8 +126,16 @@ function Diagnosis({ bay }: { bay: Bay }) {
       <>
         {back}
         <div className="sec"><span className="pill ok">Low severity</span><h2>{session.headline}</h2><p>{session.summary}</p></div>
-        <div className="sec"><h3>Helpful videos</h3>{session.resources.videos.length ? session.resources.videos.map((item: any) => <a className="vid" key={item.link} href={item.url} target="_blank" rel="noopener noreferrer"><div className="th">{item.thumbnail ? <img src={item.thumbnail} alt="" /> : Icon.play}</div><div><b>{item.title}</b><small>{item.source || 'Video'}</small></div></a>) : <p className="note">No videos were returned.</p>}</div>
-        <div className="sec"><h3>Helpful articles</h3>{session.resources.articles.length ? session.resources.articles.map((item: any) => <a className="art" key={item.link} href={item.url} target="_blank" rel="noopener noreferrer"><b>{item.title}</b><small>{item.source || item.snippet || 'Article'}</small></a>) : <p className="note">No articles were returned.</p>}</div>
+        <div className="sec"><h3>Videos</h3>{session.resources.videos.length ? <div className="res-videos">{session.resources.videos.map((item: any) => (
+          <a className="rv" key={item.link} href={item.url} target="_blank" rel="noopener noreferrer">
+            <div className="rv-th">{item.thumbnail ? <img src={item.thumbnail} alt="" loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none'; }} /> : null}<span className="rv-play">{Icon.play}</span>{item.duration && <em>{item.duration}</em>}</div>
+            <b>{item.title}</b><small>{item.source || item.channel || hostOf(item.link)}</small>
+          </a>))}</div> : <p className="note">No videos were returned.</p>}</div>
+        <div className="sec"><h3>Articles</h3>{session.resources.articles.length ? <div className="res-list">{session.resources.articles.map((item: any) => (
+          <a className="ra" key={item.link} href={item.url} target="_blank" rel="noopener noreferrer">
+            <span className="ra-src"><img src={`https://www.google.com/s2/favicons?domain=${hostOf(item.link)}&sz=32`} alt="" loading="lazy" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />{item.source || hostOf(item.link)}</span>
+            <b>{item.title}</b>{item.snippet && <small>{item.snippet}</small>}
+          </a>))}</div> : <p className="note">No articles were returned.</p>}</div>
         <div className="sec"><h3>Affected area</h3>{findings}</div>
         {faultCodes}
       </>
