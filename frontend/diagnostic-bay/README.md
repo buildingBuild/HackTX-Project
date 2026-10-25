@@ -80,6 +80,22 @@ Hardware Mode uses the existing FastAPI backend as a Wi-Fi gateway, enabled by a
 
 Repair arrows render through surfaces and disappear on preparation/final-check steps and after the current step's checkboxes are complete.
 
+### Three labeled demo paths and Toyota plan comparison
+
+The selection list prioritizes existing profiles **Sam (c08: low, 3D + OBD demo)**, **Maya (c01: low, live SerpAPI resources)** and **Marcus (c04: high, insurance agent)**. The other existing profiles remain available. Selection metadata and diagnostic responses identify the severity and provider explicitly.
+
+Every profile has **Compare Toyota protection** on its selection card and **Compare** in the workspace. The supplied 32-page Toyota Financial extract is bundled at `/docs/toyota-protection-source.pdf`; source links open the relevant pages. Comparisons include VSA Powertrain/Gold/Platinum, Tire & Wheel Gold/Platinum, and Toyota Service Care. These are protection products, separate from this app's fictional auto-insurance Silver/Gold/Platinum policy.
+
+Plan prices are absent from the extract. Enter total dealer quotes and an estimate to model plan cost plus one repair/service visit. Covered-visit arithmetic requires an explicit hypothetical eligibility/approval assumption and the agreement's deductible. The $100 VSA deductible disappears only for an eligible repair at the selling dealer. Exclusions remain effective regardless of that assumption. Quote inputs stay in memory, isolated by customer, and never change an actual policy or file a claim. Inspection alone does not establish replacement coverage.
+
+Arrows now track the animated hood mesh, cover and filter using their world-space bounds. They stay hidden until their actual target is present, draw through surfaces, and disappear when a step no longer needs guidance.
+
+### Vercel deployment requirements
+
+Use `frontend/diagnostic-bay` as the Vercel project root and the Next.js framework preset. Set `NEXT_PUBLIC_API_BASE_URL` to the reachable HTTPS URL of the deployed FastAPI backend **before** building. The local `localhost:8000` default is for development and cannot serve remote visitors. Keep SerpAPI/Snowflake credentials and `SENSOR_DEVICE_TOKEN` in the backend environment only.
+
+The Wi-Fi hardware gateway requires a persistent, single-worker backend with its current in-memory design; do not assume per-request serverless instances share hardware sessions. Browser Demo Mode needs no Arduino, but still uses the backend for the customer and diagnostic flow. No Vercel URL has been created by these source changes.
+
 See `public/models/README.md` to add another model.
 
 ## Project structure

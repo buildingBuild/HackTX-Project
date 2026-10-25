@@ -1,19 +1,25 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, type MutableRefObject } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { repairPointerFor, type RepairStep } from '@/lib/repair';
+import { repairTargetPosition, type GuidanceAnchors } from '@/lib/car';
 
 /** A separate, deliberately schematic air-cleaner explains the action without
  * pretending that the supplied composite scan has service-accurate components. */
-function AirCleaner({ step, paused, reduced }: { step: RepairStep; paused: boolean; reduced: boolean }) {
+function AirCleaner({ step, paused, reduced, anchors }: { step: RepairStep; paused: boolean; reduced: boolean; anchors: MutableRefObject<GuidanceAnchors> }) {
   const lid = useRef<THREE.Group>(null);
   const filter = useRef<THREE.Group>(null);
   const ticks = useRef(0);
   const replacement = step.action === 'fit-filter';
   const color = replacement ? '#86efbc' : '#d4b278';
+  useEffect(() => {
+    const cover = lid.current, element = filter.current;
+    anchors.current.cover = cover; anchors.current.filter = element;
+    return () => { if (anchors.current.cover === cover) anchors.current.cover = null; if (anchors.current.filter === element) anchors.current.filter = null; };
+  }, [anchors]);
   useFrame((_, delta) => {
     if (!paused) ticks.current += delta;
     const t = reduced ? 0.7 : (ticks.current % 4) / 4;
@@ -36,27 +42,28 @@ function AirCleaner({ step, paused, reduced }: { step: RepairStep; paused: boole
   </group>;
 }
 
-export default function RepairAnimation({ step, paused, reduced, showPointer }: { step: RepairStep; paused: boolean; reduced: boolean; showPointer: boolean }) {
+export default function RepairAnimation({ step, paused, reduced, showPointer, anchors }: { step: RepairStep; paused: boolean; reduced: boolean; showPointer: boolean; anchors: MutableRefObject<GuidanceAnchors> }) {
   const pointer = useRef<THREE.Group>(null);
   const ring = useRef<THREE.Mesh>(null);
   const time = useRef(0);
   const filterAction = ['open-box', 'remove-filter', 'fit-filter'].includes(step.action);
   const target = repairPointerFor(step.action);
-  const point = useMemo(() => new THREE.Vector3(...(repairPointerFor(step.action) || [0, 0, 0])), [step.action]);
+  const point = useMemo(() => new THREE.Vector3(), []);
   useFrame((_, delta) => {
     if (!paused) time.current += delta;
     const bounce = reduced ? 0 : Math.sin(time.current * 3.4) * 0.1;
-    if (pointer.current) pointer.current.position.y = point.y + 0.08 + bounce;
-    if (ring.current) ring.current.scale.setScalar(reduced ? 1 : 1 + Math.sin(time.current * 2.6) * 0.15);
+    const located = repairTargetPosition(step.action, anchors.current, point);
+    if (pointer.current) { pointer.current.visible = located; pointer.current.position.copy(point); pointer.current.position.y += 0.08 + bounce; }
+    if (ring.current) { ring.current.visible = located; ring.current.position.copy(point); ring.current.scale.setScalar(reduced ? 1 : 1 + Math.sin(time.current * 2.6) * 0.15); }
   });
   return <>
     {showPointer && target && <>
-      <group ref={pointer} position={[point.x, point.y + 0.08, point.z]}>
+      <group ref={pointer} visible={false} position={[point.x, point.y + 0.08, point.z]}>
         <mesh renderOrder={1001} rotation-z={Math.PI}><coneGeometry args={[0.12, 0.3, 20]} /><meshBasicMaterial color="#ffc919" transparent depthTest={false} depthWrite={false} toneMapped={false} /></mesh>
         <mesh renderOrder={1001} position={[0, 0.32, 0]}><cylinderGeometry args={[0.035, 0.035, 0.48, 12]} /><meshBasicMaterial color="#ffc919" transparent depthTest={false} depthWrite={false} toneMapped={false} /></mesh>
       </group>
-      <mesh renderOrder={1000} ref={ring} position={point} rotation-x={-Math.PI / 2}><ringGeometry args={[0.16, 0.19, 48]} /><meshBasicMaterial color="#ffc919" transparent opacity={0.8} side={THREE.DoubleSide} depthTest={false} depthWrite={false} toneMapped={false} /></mesh>
+      <mesh renderOrder={1000} visible={false} ref={ring} position={point} rotation-x={-Math.PI / 2}><ringGeometry args={[0.16, 0.19, 48]} /><meshBasicMaterial color="#ffc919" transparent opacity={0.8} side={THREE.DoubleSide} depthTest={false} depthWrite={false} toneMapped={false} /></mesh>
     </>}
-    {filterAction && <AirCleaner step={step} paused={paused} reduced={reduced} />}
+    {filterAction && <AirCleaner step={step} paused={paused} reduced={reduced} anchors={anchors} />}
   </>;
 }

@@ -50,6 +50,10 @@ async def get_customer(customer_id: str) -> CustomerResponse:
         vehicle_model=customer.vehicle_model,
         mileage=customer.mileage,
         location=customer.location,
+        severity=customer.issue.severity,
+        issue_code=customer.issue.code,
+        issue_description=customer.issue.description,
+        estimated_repair_cost=customer.technician_diagnosis.estimated_repair_cost if customer.id != "c08" else None,
     )
 
 
@@ -77,6 +81,7 @@ async def create_diagnostic_session(
                 raise HTTPException(status_code=422, detail="The bundled demo supports only this Land Cruiser profile's air-filter maintenance code and vehicle.")
             return DiagnosticSessionResponse(
                 severity="low",
+                source="bundled-demo",
                 resources=LowSeverityResources(
                     videos=[],
                     articles=[Resource(
@@ -99,6 +104,7 @@ async def create_diagnostic_session(
             ) from error
         response = DiagnosticSessionResponse(
             severity="low",
+            source="serpapi",
             resources=resources,
         )
         print(response.model_dump_json(indent=2))
@@ -127,6 +133,7 @@ async def create_diagnostic_session(
 
     response = DiagnosticSessionResponse(
         severity="high",
+        source="snowflake",
         recommendations=recommendations,
     )
     print(response.model_dump_json(indent=2))

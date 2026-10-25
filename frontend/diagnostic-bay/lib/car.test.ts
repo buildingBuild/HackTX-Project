@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import * as THREE from 'three';
-import { createHoodPivot, partIdForName, prepareGltfCar } from './car';
+import { createHoodPivot, partIdForName, prepareGltfCar, repairTargetPosition } from './car';
 
 // Reconstruct each asset's actual node transforms and accessor bounds without
 // needing a browser to decode embedded textures. This checks normalization,
@@ -66,4 +66,22 @@ test('hood pivot moves only the hood, with the open hood higher than the closed 
   assert.ok(opened.max.y > closed.max.y + 0.7, JSON.stringify({ opened: opened.max.toArray(), closed: closed.max.toArray(), pivot: pivot.position.toArray() }));
   assert.ok(engineBefore.min.distanceTo(engineAfter.min) < 0.001);
   assert.ok(engineBefore.max.distanceTo(engineAfter.max) < 0.001);
+});
+
+test('guidance follows the actual animated hood, cover and filter rather than a static location', () => {
+  const built = prepareGltfCar(assetBoundsScene('land-cruiser-300-open-hood.glb'), { length: 4.985 });
+  const pivot = createHoodPivot(built)!;
+  const hood = built.parts.hood.meshes[0], cover = new THREE.Mesh(new THREE.BoxGeometry(1, .1, 1)), filter = new THREE.Mesh(new THREE.BoxGeometry(.8, .1, .8));
+  const anchors = { hood, cover, filter }, point = new THREE.Vector3();
+  repairTargetPosition('open-hood', anchors, point); const opened = point.clone();
+  pivot.rotation.z = -THREE.MathUtils.degToRad(80);
+  repairTargetPosition('open-hood', anchors, point);
+  assert.ok(opened.distanceTo(point) > .5);
+  assert.ok(point.distanceTo(new THREE.Box3().setFromObject(hood).getCenter(new THREE.Vector3())) < .001);
+  cover.position.set(2.65, 2.2, .1); filter.position.set(2.65, 1.6, .1);
+  repairTargetPosition('open-box', anchors, point); assert.equal(point.y, 2.2);
+  repairTargetPosition('remove-filter', anchors, point); assert.equal(point.y, 1.6);
+  filter.position.y = 2.1; repairTargetPosition('fit-filter', anchors, point); assert.equal(point.y, 2.1);
+  assert.equal(repairTargetPosition('prepare', anchors, point), false);
+  assert.equal(repairTargetPosition('open-hood', { ...anchors, hood: null }, point), false);
 });

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { partName } from './api';
+import type { RepairAction } from './repair';
 
 /* =====================================================================
    Procedural car: one smooth lofted body, split into selectable parts.
@@ -13,6 +14,14 @@ export type CarPart = {
   state: { hover: boolean; selected: boolean; affected: boolean };
 };
 export type BuiltCar = { group: THREE.Group; parts: Record<string, CarPart> };
+export type GuidanceAnchors = { hood: THREE.Object3D | null; cover: THREE.Object3D | null; filter: THREE.Object3D | null };
+export function repairTargetPosition(action: RepairAction, anchors: GuidanceAnchors, target: THREE.Vector3): boolean {
+  const object = action === 'open-hood' ? anchors.hood : action === 'open-box' ? anchors.cover : action === 'remove-filter' || action === 'fit-filter' ? anchors.filter : null;
+  if (!object) return false;
+  object.updateWorldMatrix(true, true);
+  new THREE.Box3().setFromObject(object).getCenter(target);
+  return true;
+}
 
 /** Normalize both supplied assets using their length, not their height: the
  * open hood increases height but must not shrink the rest of the vehicle. */

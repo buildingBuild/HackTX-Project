@@ -4,11 +4,16 @@ import type { Bay } from '@/lib/useBay';
 import { Icon } from './icons';
 import SensorReadings, { SensorModeSetting } from './SensorReadings';
 import { isLandCruiserProfile } from '@/lib/telemetry';
+import { ProtectionDialog } from './ProtectionComparison';
+
+const DEMO_LABELS: Record<string, string> = { c08: 'Low · 3D + OBD demo', c01: 'Low · SerpAPI guides', c04: 'High · insurance agent' };
+const DEMO_ORDER = ['c08', 'c01', 'c04'];
 
 export function SelectScreen({ bay }: { bay: Bay }) {
   const [sel, setSel] = useState('');
   const [val, setVal] = useState('');
   const [err, setErr] = useState('');
+  const [compareOpen, setCompareOpen] = useState(false);
   const selectedId = sel || bay.customers.find((customer) => customer.id === 'c08')?.id || bay.customers[0]?.id || '';
   const c = bay.customers.find((customer) => customer.id === selectedId);
   const v = c?.vehicle;
@@ -44,13 +49,13 @@ export function SelectScreen({ bay }: { bay: Bay }) {
         )}
 
         <ul className="ss-list" role="radiogroup" aria-label="Customer">
-          {bay.customers.map((cu) => {
+          {[...bay.customers].sort((a, b) => (DEMO_ORDER.indexOf(a.id) < 0 ? 99 : DEMO_ORDER.indexOf(a.id)) - (DEMO_ORDER.indexOf(b.id) < 0 ? 99 : DEMO_ORDER.indexOf(b.id))).map((cu) => {
             const i = cu.id, cv = cu.vehicle;
             return (
               <li key={i}>
                 <button type="button" role="radio" aria-checked={selectedId === i} className="ss-row" onClick={() => setSel(i)}>
                   <span className="sw" style={{ background: cv.hex }} />
-                  <span className="ss-row-t"><b>{cu.name}{i === 'c08' && <em className="repair-profile-tag">Guided demo</em>}</b><small>{cv.year} {cv.model} · {i}</small></span>
+                  <span className="ss-row-t"><b>{cu.name}<em className={'repair-profile-tag ' + (cu.severity === 'high' ? 'severity-high' : '')}>{DEMO_LABELS[i] || (cu.severity === 'high' ? 'High severity' : 'Low severity')}</em></b><small>{cv.year} {cv.model} · {i}</small></span>
                   <span className="ss-dot" aria-hidden="true" />
                 </button>
               </li>
@@ -69,13 +74,16 @@ export function SelectScreen({ bay }: { bay: Bay }) {
             <div><dt>Coverage</dt><dd>{c.insurance_level}</dd></div>
             {c.id === 'c08' && <><div><dt>Trim</dt><dd>{v.trim}</dd></div><div><dt>Service</dt><dd>Engine air filter</dd></div></>}
             <div className="full"><dt>Customer</dt><dd>{c.description}</dd></div>
+            <div className="full"><dt>Scan path</dt><dd>{DEMO_LABELS[c.id] || `${c.severity} severity`}</dd></div>
           </dl>
+          <button className="btn profile-compare" onClick={() => setCompareOpen(true)}>{Icon.shield} Compare Toyota protection</button>
         </article>}
 
         {isLandCruiserProfile(c) && <SensorModeSetting bay={bay} />}
         <button className="ss-go" type="button" disabled={!c || bay.sensor.active} onClick={() => bay.startSession(selectedId)}>{isLandCruiserProfile(c) ? 'Start Vehicle Scan' : 'Connect OBD'}</button>
         </div>
       </div>
+      {compareOpen && c && <ProtectionDialog key={c.id} customer={c} quotes={bay.planQuotes[c.id] || {}} onQuote={(planId, changes) => bay.updatePlanQuote(c.id, planId, changes)} onClose={() => setCompareOpen(false)} />}
     </section>
   );
 }

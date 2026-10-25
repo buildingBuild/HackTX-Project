@@ -146,8 +146,9 @@ function diagnosticView(payload: any, customer: any, obd: any) {
     const guide = repairGuideFor(customer.vehicle_model, obd.issueCode, payload.severity);
     return {
       severity: 'low',
-      headline: guide ? 'Your air filter needs a refresh' : 'Helpful guidance is ready',
-      summary: guide ? 'Routine maintenance, with a little guidance. Follow the 3D walkthrough to replace a dirty engine air filter. This demo assumes a technician has ruled out an engine fault.' : `The ${obd.issueCode} issue is low severity. Review the resources below before deciding on the next step.`,
+      source: payload.source,
+      headline: guide ? 'Your air filter needs a refresh' : customer.id === 'c01' ? 'Battery service guidance is ready' : 'Helpful guidance is ready',
+      summary: guide ? 'Routine maintenance, with a little guidance. Follow the 3D walkthrough to replace a dirty engine air filter. This demo assumes a technician has ruled out an engine fault.' : customer.issue_description || `The ${obd.issueCode} issue is low severity. Review the resources below before deciding on the next step.`,
       guide,
       dtcs,
       findings: [{ partId: affectedParts[0], title: guide ? 'Engine air-filter service' : `Issue ${obd.issueCode}`, detail: guide ? 'Demo technician finding: dirty engine air filter; routine replacement due.' : 'The connected diagnostic profile marked this as a low-severity issue.' }],
@@ -172,6 +173,7 @@ function diagnosticView(payload: any, customer: any, obd: any) {
 
   return {
     severity: 'high',
+    source: payload.source,
     headline: recommendation.safe_to_drive ? 'Service needed soon' : 'Serious issue found',
     summary: recommendation.summary,
     dtcs,

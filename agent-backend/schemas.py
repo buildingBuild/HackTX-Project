@@ -46,6 +46,10 @@ class CustomerResponse(BaseModel):
     vehicle_model: str
     mileage: int
     location: str
+    severity: Literal["low", "high"]
+    issue_code: str
+    issue_description: str
+    estimated_repair_cost: float | None
 
 
 class VehicleVisualizationResponse(BaseModel):
@@ -141,6 +145,7 @@ class RecommendationResult(BaseModel):
 
 class DiagnosticSessionResponse(BaseModel):
     severity: Literal["low", "high"]
+    source: Literal["bundled-demo", "serpapi", "snowflake"] | None = None
     recommendations: RecommendationResult | None = None
     part_searches: list[PartSearchResult] = Field(default_factory=list)
     resources: LowSeverityResources | None = None

@@ -5,6 +5,7 @@ import type { Bay, Tab } from '@/lib/useBay';
 import { money, OBD, PARTS, partName } from '@/lib/api';
 import { Icon } from './icons';
 import RepairGuide, { RepairIntro } from './RepairGuide';
+import ProtectionComparison from './ProtectionComparison';
 
 const TAB_TITLE: Record<string, string> = {
   diagnosis: 'Diagnosis', insurance: 'Insurance', nearby: 'Nearby help', claim: 'Claim', vehicle: 'Vehicle',
@@ -43,6 +44,7 @@ function Home({ bay }: { bay: Bay }) {
       </div>
       <div className="rows">
         <Row bay={bay} go="diagnosis" icon={Icon.pulse} title="Diagnosis" sub={diagnosticSub} cls={status === 'done' ? (high ? 'bad' : 'good') : ''} />
+        <Row bay={bay} go="comparison" icon={Icon.shield} title="Compare Toyota protection" sub="Source coverage, deductibles and quoted plan cost" />
         {high && <Row bay={bay} go="insurance" icon={Icon.shield} title="Insurance" sub={insuranceSub} />}
         {high && <Row bay={bay} go="claim" icon={Icon.doc} title="Claim" sub={claimSub} />}
         {high && <Row bay={bay} go="nearby" icon={Icon.pin} title="Nearby service" sub={nearbySub} />}
@@ -128,6 +130,7 @@ function Diagnosis({ bay }: { bay: Bay }) {
       <>
         {back}
         <div className="sec"><span className="pill ok">Low severity</span><h2>{session.headline}</h2><p>{session.summary}</p></div>
+        {session.source && <p className="note">{session.source === 'serpapi' ? 'Live repair resources from SerpAPI' : 'Bundled Land Cruiser maintenance demo'}</p>}
         <RepairIntro bay={bay} />
         <div className="sec"><h3>Videos</h3>{session.resources.videos.length ? <div className="res-videos">{session.resources.videos.map((item: any) => (
           <a className="rv" key={item.link} href={item.url} target="_blank" rel="noopener noreferrer">
@@ -197,6 +200,7 @@ function ClaimTab({ bay }: { bay: Bay }) {
 
 export default function Panels({ bay }: { bay: Bay }) {
   switch (bay.tab) {
+    case 'comparison': return <ProtectionComparison key={bay.customer.id} compact customer={bay.customer} quotes={bay.planQuotes[bay.customer.id] || {}} onQuote={(planId, changes) => bay.updatePlanQuote(bay.customer.id, planId, changes)} />;
     case 'vehicle': return <Vehicle bay={bay} />;
     case 'diagnosis': return <Diagnosis bay={bay} />;
     case 'insurance': return <Insurance bay={bay} />;

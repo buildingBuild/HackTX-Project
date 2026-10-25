@@ -5,8 +5,9 @@ import type { ViewRequest } from '@/components/CarCanvas';
 import { api, API_BASE, money, OBD, partName, type Flags } from './api';
 import { advanceRepair, checkKey, emptyRepairProgress, type RepairGuide } from './repair';
 import { DemoSource, emptySensorSnapshot, HardwareSource, isLandCruiserProfile, ScanCollector, type SensorConfig, type SensorMode } from './telemetry';
+import type { PlanQuote } from './protection';
 
-export type Tab = 'home' | 'vehicle' | 'diagnosis' | 'insurance' | 'nearby' | 'claim';
+export type Tab = 'home' | 'vehicle' | 'diagnosis' | 'insurance' | 'nearby' | 'claim' | 'comparison';
 type Load<T> = { status: 'idle' | 'loading' | 'done' | 'error'; data: T | null; error?: string };
 
 export function buildClaimForm(customer: any, session: any, spec: any, draft: any) {
@@ -86,6 +87,10 @@ export function useBay() {
   const sessionBusy = useRef(false);
   const diagnosticPending = useRef(false);
   const configLoaded = useRef(false);
+  const [planQuotes, setPlanQuotes] = useState<Record<string, Record<string, PlanQuote>>>({});
+  const updatePlanQuote = (customerId: string, planId: string, changes: Partial<PlanQuote>) => {
+    setPlanQuotes((previous) => ({ ...previous, [customerId]: { ...previous[customerId], [planId]: { ...previous[customerId]?.[planId], ...changes } } }));
+  };
 
   const loadSensorConfig = useCallback(async () => {
     if (configLoaded.current) return;
@@ -295,6 +300,7 @@ export function useBay() {
     prepareClaim, fileClaim, pickView, userMoved,
     guide, repair, startRepair, pauseRepair, toggleRepairCheck, nextRepairStep, previousRepairStep, replayRepair,
     sensor, sensorMode, setSensorMode, sensorConfig, loadSensorConfig, cancelScan,
+    planQuotes, updatePlanQuote,
   };
 }
 

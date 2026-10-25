@@ -1,9 +1,9 @@
 'use client';
-import { Component, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Component, Suspense, useEffect, useMemo, useRef, useState, type ReactNode, type MutableRefObject } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { ContactShadows, Environment, Html, Lightformer, OrbitControls, useGLTF, useProgress } from '@react-three/drei';
 import * as THREE from 'three';
-import { buildCar, createHoodPivot, disposeCar, prepareGltfCar, refreshPart, type BuiltCar } from '@/lib/car';
+import { buildCar, createHoodPivot, disposeCar, prepareGltfCar, refreshPart, type BuiltCar, type GuidanceAnchors } from '@/lib/car';
 import type { RepairStep } from '@/lib/repair';
 import RepairAnimation from './RepairAnimation';
 
@@ -19,6 +19,7 @@ type Props = {
   auto: boolean;
   repairStep?: RepairStep;
   showRepairPointer?: boolean;
+  anchors?: MutableRefObject<GuidanceAnchors>;
   replay?: number;
   animationPaused?: boolean;
   preloadUrl?: string;
@@ -124,6 +125,11 @@ function GltfCar(p: Props) {
     return createHoodPivot(built);
   }, [built]);
   const elapsed = useRef(0);
+  useEffect(() => {
+    const anchor = hood?.children[0] || null;
+    if (p.anchors) p.anchors.current.hood = anchor;
+    return () => { if (p.anchors?.current.hood === anchor) p.anchors.current.hood = null; };
+  }, [hood, p.anchors]);
   useEffect(() => { elapsed.current = p.repairStep?.action === 'open-hood' ? 0 : 2; }, [p.repairStep?.action, p.replay]);
   useEffect(() => { if (p.preloadUrl) useGLTF.preload(p.preloadUrl); }, [p.preloadUrl]);
   useFrame((_, delta) => {
@@ -186,14 +192,15 @@ function Rig({ view, length, step, replay }: { view: ViewRequest; length: number
 export default function CarCanvas(p: Props) {
   const L = p.spec.length, d = L * 2.0;
   const target = useMemo(() => [0, 0.62, 0] as [number, number, number], []);
+  const anchors = useRef<GuidanceAnchors>({ hood: null, cover: null, filter: null });
   const [reduced, setReduced] = useState(false);
   useEffect(() => { const media = matchMedia('(prefers-reduced-motion: reduce)'); const change = () => setReduced(media.matches); change(); media.addEventListener('change', change); return () => media.removeEventListener('change', change); }, []);
   return (
     <div className="glwrap" aria-label="Interactive 3D model of the customer's car. Drag to rotate, tap a part to inspect it.">
       <Canvas dpr={[1, 2]} camera={{ fov: 24, near: 0.1, far: 100, position: [d * 0.78, d * 0.2, d * 0.62] }} onPointerMissed={() => p.onSelect(null)}>
         <Studio />
-        <ModelBoundary key={p.modelUrl} url={p.modelUrl}><Suspense fallback={<ModelLoading />}>{p.modelUrl ? <GltfCar {...p} /> : <ProceduralCar {...p} />}</Suspense></ModelBoundary>
-        {p.repairStep && <RepairAnimation key={`${p.repairStep.id}-${p.replay}`} step={p.repairStep} paused={!!p.animationPaused} reduced={reduced} showPointer={!!p.showRepairPointer} />}
+        <ModelBoundary key={p.modelUrl} url={p.modelUrl}><Suspense fallback={<ModelLoading />}>{p.modelUrl ? <GltfCar {...p} anchors={anchors} /> : <ProceduralCar {...p} />}</Suspense></ModelBoundary>
+        {p.repairStep && <RepairAnimation key={`${p.repairStep.id}-${p.replay}`} anchors={anchors} step={p.repairStep} paused={!!p.animationPaused} reduced={reduced} showPointer={!!p.showRepairPointer} />}
         <OrbitControls makeDefault enablePan={false} enableDamping dampingFactor={0.08} minDistance={L * (p.repairStep ? 0.5 : 1.3)} maxDistance={L * 3.4} maxPolarAngle={Math.PI / 2 - 0.04} target={target} autoRotate={p.auto && !p.repairStep} autoRotateSpeed={0.7} onStart={p.onUserMove} />
         <Rig view={p.view} length={L} step={p.repairStep} replay={p.replay} />
         <Fit d={d} />

@@ -50,7 +50,7 @@ function Tiles({ i }: { i: any }) {
   );
 }
 
-const NAV: [Tab, string, any][] = [['home', 'Home', Icon.car], ['diagnosis', 'Scan', Icon.pulse], ['insurance', 'Policy', Icon.shield], ['nearby', 'Nearby', Icon.pin], ['claim', 'Claim', Icon.doc]];
+const NAV: [Tab, string, any][] = [['home', 'Home', Icon.car], ['diagnosis', 'Scan', Icon.pulse], ['comparison', 'Compare', Icon.shield], ['insurance', 'Policy', Icon.shield], ['nearby', 'Nearby', Icon.pin], ['claim', 'Claim', Icon.doc]];
 
 export default function Workspace({ bay }: { bay: Bay }) {
   const c = bay.customer, v = c.vehicle, o = OBD[c.id], s = bay.diag.data, st = bay.diag.status, mobile = useIsMobile();
@@ -79,7 +79,7 @@ export default function Workspace({ bay }: { bay: Bay }) {
       <nav className="rail" aria-label="Workspace">
         <div className="brand-mark" aria-hidden="true">{Icon.mark}</div>
         <div style={{ display: 'contents' }}>
-          {NAV.filter(([k]) => high || k === 'home' || k === 'diagnosis').map(([k, label, icon]) => (
+          {NAV.filter(([k]) => high || k === 'home' || k === 'diagnosis' || k === 'comparison').map(([k, label, icon]) => (
             <button key={k} className="nav" title={label} aria-current={bay.tab === k ? 'true' : undefined}
               onClick={() => { bay.setTab(k); if (mobile) document.getElementById('panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}>
               {icon}<span>{label}</span>
