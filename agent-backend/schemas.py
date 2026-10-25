@@ -38,6 +38,16 @@ class CustomerInformation(BaseModel):
     location: str
 
 
+class CustomerResponse(BaseModel):
+    id: str
+    name: str
+    description: str
+    insurance_level: InsuranceLevel
+    vehicle_model: str
+    mileage: int
+    location: str
+
+
 class DiagnosticContext(BaseModel):
     issue_code: str
     vehicle_model: str

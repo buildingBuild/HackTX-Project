@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
 from helper import (
     get_customer_information,
@@ -8,6 +8,7 @@ from helper import (
 )
 from low_severity_resources import get_low_severity_resources
 from schemas import (
+    CustomerResponse,
     DiagnosticContext,
     DiagnosticSessionRequest,
     DiagnosticSessionResponse,
@@ -16,6 +17,24 @@ from schemas import (
 
 
 app = FastAPI(title="Agent Backend", version="0.1.0")
+
+
+@app.get("/customers/{customer_id}")
+async def get_customer(customer_id: str) -> CustomerResponse:
+    try:
+        customer = get_customer_information(customer_id)
+    except ValueError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+
+    return CustomerResponse(
+        id=customer.id,
+        name=customer.name,
+        description=customer.description,
+        insurance_level=customer.insurance_level,
+        vehicle_model=customer.vehicle_model,
+        mileage=customer.mileage,
+        location=customer.location,
+    )
 
 
 @app.post("/diagnostic-sessions")
