@@ -94,7 +94,7 @@ The frontend may also include real OBD data:
   "customer_id": "c05",
   "diagnostic": {
     "issue_code": "P0730",
-    "vehicle_model": "2019 Honda Civic EX",
+    "vehicle_model": "2019 Toyota Corolla SE",
     "mileage": 91876
   }
 }
