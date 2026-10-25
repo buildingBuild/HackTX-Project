@@ -48,6 +48,14 @@ class CustomerResponse(BaseModel):
     location: str
 
 
+class VehicleVisualizationResponse(BaseModel):
+    customer_id: str
+    vehicle_model: str
+    mileage: int
+    model_url: str | None = None
+    open_hood_model_url: str | None = None
+
+
 class DiagnosticContext(BaseModel):
     issue_code: str
     vehicle_model: str

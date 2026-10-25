@@ -7,6 +7,9 @@ import { Icon, Silhouette } from './icons';
 import Panels from './Panels';
 import ClaimDialog from './ClaimDialog';
 import ApiLog from './ApiLog';
+import SensorReadings from './SensorReadings';
+import { isLandCruiserProfile } from '@/lib/telemetry';
+import { stepComplete } from '@/lib/repair';
 
 const CarCanvas = dynamic(() => import('./CarCanvas'), { ssr: false });
 
@@ -52,7 +55,11 @@ const NAV: [Tab, string, any][] = [['home', 'Home', Icon.car], ['diagnosis', 'Sc
 export default function Workspace({ bay }: { bay: Bay }) {
   const c = bay.customer, v = c.vehicle, o = OBD[c.id], s = bay.diag.data, st = bay.diag.status, mobile = useIsMobile();
   const [logOpen, setLogOpen] = useState(false);
+  const [animationPaused, setAnimationPaused] = useState(false);
   const spec = bay.viz.data?.spec, vizUrl = bay.viz.data?.modelUrl;
+  const repairStep = bay.guide && bay.repair.active && !bay.repair.finished && bay.tab === 'diagnosis' ? bay.guide.steps[bay.repair.step] : undefined;
+  const modelUrl = repairStep?.model === 'engine' ? bay.viz.data?.openHoodModelUrl || vizUrl : vizUrl;
+  useEffect(() => { setAnimationPaused(false); }, [repairStep?.id, bay.repair.replay]);
   const high = s && s.severity === 'high', moveBelow = mobile && high && st === 'done';
   const rid = bay.selected || bay.hover, finding = rid && s ? s.findings.find((x: any) => x.partId === rid) : null;
   const reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -65,7 +72,7 @@ export default function Workspace({ bay }: { bay: Bay }) {
     </div>
   ) : null;
 
-  const bottom = st === 'loading' ? <Agent start={bay.diag.start} /> : high ? (moveBelow ? null : <Tiles i={s.insurance} />) : s ? <div className="tip">The affected area is highlighted in yellow</div> : null;
+  const bottom = repairStep ? <div className="repair-stage-caption"><span className="repair-stage-number">{String(bay.repair.step + 1).padStart(2, '0')}</span><span><small>Follow along · step {bay.repair.step + 1}/{bay.guide!.steps.length}</small><b>{repairStep.cue}</b></span><button aria-label={animationPaused ? 'Play animation' : 'Pause animation'} title={animationPaused ? 'Play animation' : 'Pause animation'} onClick={() => setAnimationPaused((paused) => !paused)}>{animationPaused ? '▶' : 'Ⅱ'}</button></div> : st === 'loading' ? <Agent start={bay.diag.start} /> : high ? (moveBelow ? null : <Tiles i={s.insurance} />) : s ? <div className="tip">{bay.repair.finished ? 'Walkthrough complete · review the final checks' : 'The affected area is highlighted in yellow'}</div> : null;
 
   return (
     <section className="screen" id="screen-work">
@@ -88,21 +95,26 @@ export default function Workspace({ bay }: { bay: Bay }) {
 
       <div className="stage-col">
         <div className="topbar">
-          <div className="who"><h2>{v.year} {v.make} {v.model}</h2><small>Parked · OBD connected · {c.name} · {c.id}</small></div>
+          <div className="who"><h2>{v.year} {v.make} {v.model}</h2><small>Parked · {isLandCruiserProfile(c) ? 'Land Cruiser demo profile' : 'OBD connected'} · {c.name} · {c.id}</small></div>
           <div className="telem">
             {[['Mileage', `${o.mileage.toLocaleString('en-US')} mi`], ['Issue code', o.issueCode]].map(([k, val]) => <span className="tchip" key={k}>{k} <b>{val}</b></span>)}
           </div>
         </div>
 
-        <div className="stage" id="stage">
+        <div className={'stage' + (repairStep ? ' repair-stage' : '')} id="stage">
           {spec && (
             <CarCanvas
               key={bay.viz.data.customerId}
               spec={spec}
-              modelUrl={vizUrl}
-              affected={s ? s.affectedParts : []}
-              selected={bay.selected}
-              hover={bay.hover}
+              modelUrl={modelUrl}
+              preloadUrl={bay.viz.data?.openHoodModelUrl}
+              repairStep={repairStep}
+              showRepairPointer={repairStep ? !stepComplete(repairStep, bay.repair.checked) : false}
+              replay={bay.repair.replay}
+              animationPaused={animationPaused}
+              affected={repairStep ? repairStep.model === 'engine' ? [] : ['hood'] : s ? s.affectedParts : []}
+              selected={repairStep ? null : bay.selected}
+              hover={repairStep ? null : bay.hover}
               view={bay.view}
               auto={bay.auto && !reduced}
               onSelect={bay.setSelected}
@@ -126,7 +138,8 @@ export default function Workspace({ bay }: { bay: Bay }) {
               )}
             </div>
           </div>
-          <div className="hint">Drag to rotate<br />Tap a part to inspect</div>
+          <div className="hint">Drag to rotate<br />{repairStep ? 'Scroll to get closer' : 'Tap a part to inspect'}</div>
+          {repairStep?.model === 'engine' && <div className="repair-layout-note">Engine layout is illustrative</div>}
 
           <div className="vstate">
             {(bay.viz.status === 'loading' || bay.viz.status === 'idle') && <div className="card"><div className="spin" /><b>Loading your {v.year} {v.make} {v.model}</b><span className="note">Fetching the 3D model</span></div>}
@@ -144,7 +157,7 @@ export default function Workspace({ bay }: { bay: Bay }) {
         {moveBelow && <div className="hud-bottom"><Tiles i={s.insurance} /></div>}
       </div>
 
-      <aside className="panel" id="panel" aria-live="polite"><div className="pbody"><Panels bay={bay} /></div></aside>
+      <aside className="panel" id="panel" aria-live="polite"><div className="pbody"><SensorReadings bay={bay} /><Panels bay={bay} /></div></aside>
       {logOpen && <ApiLog />}
       <ClaimDialog bay={bay} />
     </section>

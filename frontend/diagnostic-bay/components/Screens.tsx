@@ -2,12 +2,14 @@
 import { useState } from 'react';
 import type { Bay } from '@/lib/useBay';
 import { Icon } from './icons';
+import SensorReadings, { SensorModeSetting } from './SensorReadings';
+import { isLandCruiserProfile } from '@/lib/telemetry';
 
 export function SelectScreen({ bay }: { bay: Bay }) {
   const [sel, setSel] = useState('');
   const [val, setVal] = useState('');
   const [err, setErr] = useState('');
-  const selectedId = sel || bay.customers[0]?.id || '';
+  const selectedId = sel || bay.customers.find((customer) => customer.id === 'c08')?.id || bay.customers[0]?.id || '';
   const c = bay.customers.find((customer) => customer.id === selectedId);
   const v = c?.vehicle;
 
@@ -48,7 +50,7 @@ export function SelectScreen({ bay }: { bay: Bay }) {
               <li key={i}>
                 <button type="button" role="radio" aria-checked={selectedId === i} className="ss-row" onClick={() => setSel(i)}>
                   <span className="sw" style={{ background: cv.hex }} />
-                  <span className="ss-row-t"><b>{cu.name}</b><small>{cv.year} {cv.model} · {i}</small></span>
+                  <span className="ss-row-t"><b>{cu.name}{i === 'c08' && <em className="repair-profile-tag">Guided demo</em>}</b><small>{cv.year} {cv.model} · {i}</small></span>
                   <span className="ss-dot" aria-hidden="true" />
                 </button>
               </li>
@@ -65,11 +67,13 @@ export function SelectScreen({ bay }: { bay: Bay }) {
           <dl className="ss-specs">
             <div><dt>Odometer</dt><dd>{v.odometerMi.toLocaleString('en-US')} mi</dd></div>
             <div><dt>Coverage</dt><dd>{c.insurance_level}</dd></div>
+            {c.id === 'c08' && <><div><dt>Trim</dt><dd>{v.trim}</dd></div><div><dt>Service</dt><dd>Engine air filter</dd></div></>}
             <div className="full"><dt>Customer</dt><dd>{c.description}</dd></div>
           </dl>
         </article>}
 
-        <button className="ss-go" type="button" disabled={!c} onClick={() => bay.startSession(selectedId)}>Connect OBD</button>
+        {isLandCruiserProfile(c) && <SensorModeSetting bay={bay} />}
+        <button className="ss-go" type="button" disabled={!c || bay.sensor.active} onClick={() => bay.startSession(selectedId)}>{isLandCruiserProfile(c) ? 'Start Vehicle Scan' : 'Connect OBD'}</button>
         </div>
       </div>
     </section>
@@ -84,6 +88,12 @@ const WAIT = [
 
 export function WaitScreen({ bay }: { bay: Bay }) {
   const step = bay.waitStep, c = bay.customer, v = c.vehicle;
+  const landCruiser = isLandCruiserProfile(c);
+  const scanText = landCruiser ? [
+    ['Starting vehicle scan', 'Data collection starts automatically for this Land Cruiser.'],
+    ['Collecting readings…', bay.sensorMode === 'demo' ? 'Simulating decoded OBD values once per second.' : 'Waiting for the ESP32 Wi-Fi gateway and attached sensors or emulator.'],
+    ['Scan in progress', 'Collecting a 12-second sample window and preparing the demo diagnosis.'],
+  ] : WAIT;
   return (
     <section className="screen" id="screen-wait">
       <div className="wait-top">{v.year} {v.make} {v.model} · {c.name}</div>
@@ -93,10 +103,11 @@ export function WaitScreen({ bay }: { bay: Bay }) {
           <div className="core">{step === 2 ? Icon.check : Icon.obd}</div>
         </div>
         <div className="wait-text" aria-live="polite">
-          <h2>{WAIT[step][0]}</h2>
-          <p>{WAIT[step][1]}</p>
+          <h2>{scanText[step][0]}</h2>
+          <p>{scanText[step][1]}</p>
         </div>
         <div className="wait-prog" aria-hidden="true">{[0, 1, 2].map((i) => <i key={i} className={i <= step ? 'on' : ''} />)}</div>
+        {landCruiser && <SensorReadings bay={bay} compact />}
       </div>
     </section>
   );

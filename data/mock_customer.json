@@ -138,5 +138,25 @@
       "technician_findings": "Brake pressure drops after the vehicle is turned off, and there is no evidence of collision damage, neglect, or contaminated brake fluid."
     },
     "location": "Austin, TX"
+  },
+  {
+    "id": "c08",
+    "name": "Sam Taylor",
+    "description": "Demo profile for a Land Cruiser owner learning a routine engine air-filter replacement with a narrated 3D walkthrough.",
+    "vehicle_model": "2022 Toyota Land Cruiser 300 VX.R",
+    "mileage": 32480,
+    "insurance_level": "gold",
+    "issue": {
+      "description": "Routine engine air-filter service is due. A technician confirmed a dirty filter with no engine fault.",
+      "code": "MAINT-AIR-FILTER",
+      "severity": "low"
+    },
+    "technician_diagnosis": {
+      "confirmed_diagnosis": "Replace the dirty engine air filter as routine maintenance. This demo is not a diagnosis of a check-engine light.",
+      "estimated_repair_cost": 0,
+      "currency": "USD",
+      "technician_findings": "Demo inspection: no intake damage, fluid contamination, overheating, or engine-running fault. Replacement part and housing layout must be verified against the vehicle manual. No cost estimate has been prepared."
+    },
+    "location": "Austin, TX"
   }
 ]

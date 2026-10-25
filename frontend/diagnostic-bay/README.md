@@ -45,13 +45,13 @@ Restart `npm run dev` after changing it.
 
 ## How the app flows
 
-1. **Pick a customer** — the list loads from `GET /customers/{id}` (c01–c07).
+1. **Pick a customer** — the list loads from `GET /customers/{id}` (c01–c08).
 2. **Connect OBD** — a simulated "waiting → connecting → connected" screen runs for about five seconds.
 3. **On connect**, two requests start at the same time and don't wait on each other:
    - `POST /diagnostic-sessions` — the diagnosis
    - `GET /3d-visualization/{id}` — the car model
 4. **The workspace** shows the 3D car while the diagnosis runs. The affected part is highlighted in yellow.
-   - **Low severity** — helpful videos and articles (from SerpAPI). Nav shows Home and Scan only.
+   - **Low severity** — helpful videos and articles (from SerpAPI). The Land Cruiser demo also offers a narrated, animated repair checklist. Nav shows Home and Scan only.
    - **High severity** — safety warning, coverage, repair cost, deductible, insurance payment, what the customer pays, and next steps. Nav adds Policy, Claim and Nearby.
 5. **Autofill insurance claim** → review → **File demo claim**. Filing is a demo only (nothing is sent to an insurer) and returns a mock claim number.
 6. **After filing**, `GET /service-locations?location=<customer city>` loads nearby Toyota service locations with directions.
@@ -60,7 +60,25 @@ Click **API** in the left nav to see every request with its status and timing.
 
 ## 3D car models
 
-Every customer drives a Toyota sedan, so they all use `public/models/camry.glb`, recoloured per customer. If `/3d-visualization/{id}` returns a `model_url`, that model is used instead. If no model is available, a built-in shape is drawn in code.
+Sedan customers use `public/models/camry.glb`, recoloured per customer. The new **Sam Taylor (c08)** demo profile drives a **2022 Toyota Land Cruiser 300 VX.R**, with **32,480 mi**, Gold coverage, and Austin, TX as its demo location. It uses the two supplied Land Cruiser assets. If `/3d-visualization/{id}` returns a `model_url`, that model is used instead. If no model is available, a built-in shape is drawn in code.
+
+### Guided Land Cruiser repair
+
+Select **Sam Taylor · c08** (selected by default), connect, then choose **Start guided repair** in the diagnosis panel. This fixture has the low-severity maintenance code `MAINT-AIR-FILTER`; it represents a dirty filter already checked by a demo technician, not a general check-engine diagnosis. Its diagnostic response works without SerpAPI or Snowflake credentials; the backend still needs to run.
+
+The closed-hood asset appears first. Six manual steps cover preparation, opening and supporting the hood, opening the air cleaner, removing the old filter, fitting the replacement, and final checks. Only the engine steps load the open-hood asset. Camera transitions, a hood-opening animation, animated arrows, and a separate schematic filter animation follow the current step. Reduced-motion preferences are respected.
+
+Enable **Voice guidance** to hear browser speech synthesis; narration availability depends on the browser and installed voices. Check both items to unlock the next step. Back, pause/resume, replay/recenter, and animation pause are available. Progress lasts for the current session and resets when switching customers, retrying diagnosis, or starting another walkthrough. Completing the checklist does not verify a repair or clear an OBD fault.
+
+Run `npm test` for checklist gating and asset normalization/hinge checks. Run the offline API tests with `python -m unittest test_guided_repair` from `agent-backend` using its Python environment.
+
+### Land Cruiser scan telemetry
+
+For **c08 only**, the existing connect button is labeled **Start Vehicle Scan**. It automatically starts a fresh sensor session and uses a 12-second sample window before completing the existing diagnosis. Demo Mode is the default: simulated OBD coolant temperature (PID 0105), engine RPM (010C), module voltage (0142), and an extra vibration signal update once per second. The existing connection screen and side panel show the current statistics, compact history charts, provenance, sample count, last successful reading, and scan ID. Cancel, completion, failure, and customer reset stop collection. Other profiles retain their original flow.
+
+Hardware Mode uses the existing FastAPI backend as a Wi-Fi gateway, enabled by a server-side `SENSOR_DEVICE_TOKEN`. An ESP32 can emulate OBD values (still labeled simulated) or send configured attached-sensor measurements. No actual vehicle OBD interface has been implemented. See [firmware, initial setup, metric meanings, gateway contract, and test instructions](../../arduino/land_cruiser_telemetry/README.md).
+
+Repair arrows render through surfaces and disappear on preparation/final-check steps and after the current step's checkboxes are complete.
 
 See `public/models/README.md` to add another model.
 
