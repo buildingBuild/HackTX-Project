@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from pathlib import Path
 
 import httpx
@@ -101,8 +102,18 @@ async def give_recommendations(
         raise RuntimeError("Snowflake agent returned no text response")
 
     answer = answer.strip()
-    if answer.startswith("```"):
-        answer = answer.split("\n", 1)[1].rsplit("```", 1)[0].strip()
+    fenced_json = re.search(
+        r"```(?:json)?\s*(\{.*\})\s*```",
+        answer,
+        re.DOTALL,
+    )
+    if fenced_json:
+        answer = fenced_json.group(1)
+    elif not answer.startswith("{"):
+        start = answer.find("{")
+        end = answer.rfind("}")
+        if start != -1 and end != -1:
+            answer = answer[start : end + 1]
 
     return RecommendationResult.model_validate_json(answer)
 
