@@ -1,0 +1,122 @@
+[
+  {
+    "id": "c01",
+    "name": "Maya Thompson",
+    "description": "A college student who relies on her car to commute to class and work.",
+    "vehicle_model": "2016 Toyota Corolla LE",
+    "mileage": 84320,
+    "insurance_level": "silver",
+    "issue": {
+      "description": "Low system voltage detected and the battery fails to hold a charge.",
+      "code": "P0562",
+      "severity": "low"
+    },
+    "technician_diagnosis": {
+      "confirmed_diagnosis": "The 12-volt battery has failed and cannot hold a charge.",
+      "estimated_repair_cost": 220,
+      "currency": "USD",
+      "technician_findings": "The charging system passed testing, and there is no evidence of neglect."
+    },
+    "location": "Austin, TX"
+  },
+  {
+    "id": "c02",
+    "name": "Priya Shah",
+    "description": "A hospital nurse who needs reliable transportation for early and overnight shifts.",
+    "vehicle_model": "2021 Mazda CX-5 Touring",
+    "mileage": 51247,
+    "insurance_level": "platinum",
+    "issue": {
+      "description": "The passenger door has a cosmetic scratch that needs paint repair.",
+      "code": "BODY-SCRATCH",
+      "severity": "low"
+    },
+    "technician_diagnosis": {
+      "confirmed_diagnosis": "The passenger door has minor clear-coat and paint damage with no structural damage.",
+      "estimated_repair_cost": 450,
+      "currency": "USD",
+      "technician_findings": "The damage is cosmetic and limited to the passenger-door finish."
+    },
+    "location": "San Antonio, TX"
+  },
+  {
+    "id": "c03",
+    "name": "Jordan Lee",
+    "description": "A delivery driver whose vehicle is used throughout the day for work.",
+    "vehicle_model": "2018 Ford Escape SE",
+    "mileage": 126804,
+    "insurance_level": "gold",
+    "issue": {
+      "description": "The tire-pressure monitoring system reports critically low pressure in one tire.",
+      "code": "TPMS-LOW-PRESSURE",
+      "severity": "low"
+    },
+    "technician_diagnosis": {
+      "confirmed_diagnosis": "A road-hazard puncture damaged the tire beyond safe repair.",
+      "estimated_repair_cost": 260,
+      "currency": "USD",
+      "technician_findings": "The remaining tires have serviceable tread, and there is no evidence of neglect."
+    },
+    "location": "Dallas, TX"
+  },
+  {
+    "id": "c04",
+    "name": "Marcus Green",
+    "description": "A parent and daily commuter who frequently drives on highways with his family.",
+    "vehicle_model": "2020 Toyota Camry SE",
+    "mileage": 67315,
+    "insurance_level": "silver",
+    "issue": {
+      "description": "The supplemental restraint system recorded a front-impact event and reports an airbag fault.",
+      "code": "B1650",
+      "severity": "high"
+    },
+    "technician_diagnosis": {
+      "confirmed_diagnosis": "The front-impact event damaged SRS components that require replacement and calibration.",
+      "estimated_repair_cost": 2400,
+      "currency": "USD",
+      "technician_findings": "The damage resulted from the collision, with no evidence of neglect or prior tampering."
+    },
+    "location": "Fort Worth, TX"
+  },
+  {
+    "id": "c05",
+    "name": "Alex Rivera",
+    "description": "A small-business owner who uses the vehicle for client visits across the city.",
+    "vehicle_model": "2019 Honda Civic EX",
+    "mileage": 91876,
+    "insurance_level": "platinum",
+    "issue": {
+      "description": "The powertrain control module detected an incorrect transmission gear ratio while shifting.",
+      "code": "P0730",
+      "severity": "high"
+    },
+    "technician_diagnosis": {
+      "confirmed_diagnosis": "The CVT has an internal mechanical failure and requires replacement.",
+      "estimated_repair_cost": 4200,
+      "currency": "USD",
+      "technician_findings": "There is no evidence of neglect, fluid contamination, or missed maintenance."
+    },
+    "location": "Houston, TX"
+  },
+  {
+    "id": "c06",
+    "name": "Elena Brooks",
+    "description": "A remote worker who mainly uses her car for errands and weekend trips.",
+    "vehicle_model": "2022 Hyundai Tucson SEL",
+    "mileage": 38942,
+    "insurance_level": "gold",
+    "issue": {
+      "description": "The oil-life monitoring system reports that an engine oil change is due.",
+      "code": "MAINT-OIL-LIFE",
+      "severity": "low"
+    },
+    "technician_diagnosis": {
+      "confirmed_diagnosis": "The vehicle is due for a routine engine oil and filter change.",
+      "estimated_repair_cost": 95,
+      "currency": "USD",
+      "technician_findings": "No oil leak or engine fault was found; this is scheduled maintenance."
+    },
+    "location": "Round Rock, TX"
+  }
+]
