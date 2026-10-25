@@ -23,7 +23,7 @@
     "id": "c02",
     "name": "Priya Shah",
     "description": "A hospital nurse who needs reliable transportation for early and overnight shifts.",
-    "vehicle_model": "2021 Mazda CX-5 Touring",
+    "vehicle_model": "2021 Toyota Camry SE",
     "mileage": 51247,
     "insurance_level": "platinum",
     "issue": {
@@ -43,7 +43,7 @@
     "id": "c03",
     "name": "Jordan Lee",
     "description": "A delivery driver whose vehicle is used throughout the day for work.",
-    "vehicle_model": "2018 Ford Escape SE",
+    "vehicle_model": "2018 Toyota Avalon XLE",
     "mileage": 126804,
     "insurance_level": "gold",
     "issue": {
@@ -83,7 +83,7 @@
     "id": "c05",
     "name": "Alex Rivera",
     "description": "A small-business owner who uses the vehicle for client visits across the city.",
-    "vehicle_model": "2019 Honda Civic EX",
+    "vehicle_model": "2019 Toyota Corolla SE",
     "mileage": 91876,
     "insurance_level": "platinum",
     "issue": {
@@ -103,7 +103,7 @@
     "id": "c06",
     "name": "Elena Brooks",
     "description": "A remote worker who mainly uses her car for errands and weekend trips.",
-    "vehicle_model": "2022 Hyundai Tucson SEL",
+    "vehicle_model": "2022 Toyota Camry LE",
     "mileage": 38942,
     "insurance_level": "gold",
     "issue": {
@@ -122,8 +122,8 @@
   {
     "id": "c07",
     "name": "Advaith",
-    "description": "A software engineer who uses his minivan for family trips and daily commuting.",
-    "vehicle_model": "2021 Toyota Sienna XLE",
+    "description": "A software engineer who uses his sedan for family trips and daily commuting.",
+    "vehicle_model": "2021 Toyota Avalon Limited",
     "mileage": 76418,
     "insurance_level": "platinum",
     "issue": {
