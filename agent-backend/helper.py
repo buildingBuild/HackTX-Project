@@ -1,10 +1,12 @@
 import json
 import os
+from pathlib import Path
 
 import httpx
 from dotenv import load_dotenv
 from schemas import (
-    InteractionSetup,
+    CustomerInformation,
+    InsuranceLevel,
     PartListing,
     PartSearchResult,
     RecommendationResult,
@@ -13,28 +15,40 @@ from schemas import (
 
 load_dotenv()
 
+CUSTOMERS_FILE = Path(__file__).resolve().parents[1] / "data" / "mock_customer.json"
+INSURANCE_FILE = Path(__file__).resolve().parents[1] / "data" / "insurance_policy.md"
+
 
 def get_device_schematics(obd_data: dict[str, object]) -> str:
-    """Format OBD scanner data as context for the diagnostic agent."""
     return json.dumps(obd_data, indent=2, default=str)
 
 
-def get_insurance_information(insurance_data: dict[str, object]) -> str:
-    """Format insurance data as context for the diagnostic agent."""
-    return json.dumps(insurance_data, indent=2, default=str)
+def get_insurance_information(insurance_level: InsuranceLevel) -> str:
+    policy = INSURANCE_FILE.read_text()
+    heading = f"## {insurance_level.title()}"
+    start = policy.index(heading)
+    end = policy.find("\n## ", start + len(heading))
+
+    return policy[start:end].strip() if end != -1 else policy[start:].strip()
 
 
-def get_customer_information(customer_data: dict[str, object]) -> str:
-    """Format customer data as context for the diagnostic agent."""
-    return json.dumps(customer_data, indent=2, default=str)
+def get_customer_information(customer_id: str) -> CustomerInformation:
+    customers = json.loads(CUSTOMERS_FILE.read_text())
+    customer = next(
+        (customer for customer in customers if customer["id"] == customer_id),
+        None,
+    )
+    if customer is None:
+        raise ValueError(f"Customer '{customer_id}' was not found")
+
+    return CustomerInformation.model_validate(customer)
 
 
 async def handle_low_severity(
-    customer_data: dict[str, object],
-    vehicle_data: dict[str, object],
+    customer_id: str,
     diagnostic_data: dict[str, object],
 ) -> None:
-    """Placeholder for the low-severity flow."""
+    pass
 
 
 async def give_recommendations(
@@ -42,7 +56,6 @@ async def give_recommendations(
     customer_context: str,
     insurance_context: str,
 ) -> RecommendationResult:
-    """Generate high-severity recommendations with the Snowflake agent."""
     base_url = os.environ["SNOWFLAKE_BASE_URL"].rstrip("/")
     database = os.environ["SNOWFLAKE_DATABASE"]
     schema = os.environ["SNOWFLAKE_SCHEMA"]
@@ -97,19 +110,10 @@ async def give_recommendations(
     return RecommendationResult.model_validate_json(answer)
 
 
-def give_interaction(
-    vehicle_model: str,
-    recommendations: RecommendationResult,
-) -> InteractionSetup:
-    """Build the 3D vehicle configuration consumed by the frontend."""
-    raise NotImplementedError("Connect the frontend 3D model setup here")
-
-
 async def search_parts(
     parts: list[str],
     car_model: str,
 ) -> list[PartSearchResult]:
-    """Search Google Shopping for parts identified by the diagnostic agent."""
     api_key = os.environ["SERPAPI_KEY"]
     results_per_part = int(os.environ["SERP_RESULTS_PER_PART"])
     searches: list[PartSearchResult] = []

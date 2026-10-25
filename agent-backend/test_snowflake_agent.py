@@ -36,10 +36,10 @@ async def main() -> None:
 
     result = await give_recommendations(
         diagnostic_context=get_device_schematics(diagnosis),
-        customer_context=get_customer_information(customer),
-        insurance_context=get_insurance_information(
-            {"policy": (data_dir / "insurance_policy.md").read_text()}
+        customer_context=get_customer_information(customer["id"]).model_dump_json(
+            indent=2
         ),
+        insurance_context=get_insurance_information(customer["insurance_level"]),
     )
     print(result.model_dump_json(indent=2))
 

@@ -32,19 +32,12 @@ mock_obd_data = {
 agent_context = get_device_schematics(mock_obd_data)
 ```
 
-Insurance data can be added to the agent context in the same way:
+Load the relevant section of the mock insurance policy by plan level:
 
 ```python
 from helper import get_insurance_information
 
-insurance_context = get_insurance_information(
-    {
-        "provider": "Example Insurance",
-        "policy_number": "AUTO-12345",
-        "deductible": 500,
-        "coverage": ["collision", "comprehensive"],
-    }
-)
+insurance_context = get_insurance_information("gold")
 ```
 
 Run the published Snowflake agent with the mock high-severity case:

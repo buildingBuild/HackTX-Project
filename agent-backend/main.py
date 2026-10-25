@@ -24,20 +24,15 @@ async def create_diagnostic_session(
 ) -> DiagnosticSessionResponse:
     if request.diagnostic.severity == "low":
         await handle_low_severity(
-            customer_data=request.customer.model_dump(),
-            vehicle_data=request.vehicle.model_dump(),
+            customer_id=request.customer_id,
             diagnostic_data=request.diagnostic.model_dump(),
         )
         return DiagnosticSessionResponse(severity="low")
 
-    customer_context = get_customer_information(request.customer.model_dump())
-    insurance_context = get_insurance_information(request.insurance.model_dump())
-    diagnostic_context = get_device_schematics(
-        {
-            "vehicle": request.vehicle.model_dump(),
-            "diagnostic": request.diagnostic.model_dump(),
-        }
-    )
+    customer = get_customer_information(request.customer_id)
+    customer_context = customer.model_dump_json(indent=2)
+    insurance_context = get_insurance_information(customer.insurance_level)
+    diagnostic_context = get_device_schematics(request.diagnostic.model_dump())
 
     recommendations = await give_recommendations(
         diagnostic_context=diagnostic_context,
@@ -45,19 +40,9 @@ async def create_diagnostic_session(
         insurance_context=insurance_context,
     )
 
-    vehicle_name = " ".join(
-        value
-        for value in (
-            str(request.vehicle.year),
-            request.vehicle.make,
-            request.vehicle.model,
-            request.vehicle.trim,
-        )
-        if value
-    )
     part_searches = await search_parts(
         parts=recommendations.required_parts,
-        car_model=vehicle_name,
+        car_model=request.diagnostic.vehicle_model,
     )
 
     return DiagnosticSessionResponse(
@@ -65,6 +50,13 @@ async def create_diagnostic_session(
         recommendations=recommendations,
         part_searches=part_searches,
     )
+
+
+@app.get("/3d-visualization/{customer_id}")
+async def prepare_3d_visualization(customer_id: str) -> None:
+    customer = get_customer_information(customer_id)
+    vehicle_model = customer.vehicle_model
+    mileage = customer.mileage
 
 
 @app.get("/health")

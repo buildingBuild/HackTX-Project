@@ -2,6 +2,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+InsuranceLevel = Literal["silver", "gold", "platinum"]
+
 
 class RootResponse(BaseModel):
     message: str
@@ -11,44 +13,33 @@ class HealthResponse(BaseModel):
     status: str
 
 
-class CustomerContext(BaseModel):
+class CustomerIssue(BaseModel):
+    description: str
+    code: str
+    severity: Literal["low", "high"]
+
+
+class CustomerInformation(BaseModel):
+    id: str
     name: str
     description: str
-    insurance_level: Literal["silver", "gold", "platinum"]
+    vehicle_model: str
     mileage: int
+    insurance_level: InsuranceLevel
+    issue: CustomerIssue
     location: str
 
 
-class VehicleContext(BaseModel):
-    year: int
-    make: str
-    model: str
-    trim: str | None = None
-
-
 class DiagnosticContext(BaseModel):
-    code: str
-    description: str
+    issue_code: str
+    vehicle_model: str
+    mileage: int
     severity: Literal["low", "high"]
-    symptoms: list[str] = Field(default_factory=list)
-    confirmed_diagnosis: str | None = None
-    estimated_repair_cost: float | None = None
-    currency: str = "USD"
-    technician_findings: str | None = None
-
-
-class InsuranceContext(BaseModel):
-    level: Literal["silver", "gold", "platinum"]
-    deductible: float
-    coverage: list[str]
-    conditions: list[str] = Field(default_factory=list)
 
 
 class DiagnosticSessionRequest(BaseModel):
-    customer: CustomerContext
-    vehicle: VehicleContext
+    customer_id: str
     diagnostic: DiagnosticContext
-    insurance: InsuranceContext
 
 
 class PartListing(BaseModel):
@@ -95,10 +86,3 @@ class DiagnosticSessionResponse(BaseModel):
     severity: Literal["low", "high"]
     recommendations: RecommendationResult | None = None
     part_searches: list[PartSearchResult] = Field(default_factory=list)
-
-
-class InteractionSetup(BaseModel):
-    vehicle_model: str
-    model_url: str | None = None
-    highlighted_parts: list[str]
-    annotations: list[str]
