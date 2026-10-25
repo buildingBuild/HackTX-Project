@@ -6,6 +6,15 @@ Built by **Team Navonic** (Navigation + Electronics) for HackTX.
 
 Drivn plugs into a car's OBD-II port, reads what's wrong, and tells the driver three things they usually have to piece together from a mechanic, an insurer and a search engine: **how serious it is, what it will cost them, and where to go.** The whole experience is centred on an interactive 3D model of the customer's own car, with the affected part highlighted in yellow.
 
+
+<p align="center">
+  <img src="docs/screenshots/workspace.jpg" alt="Drivn workspace: 3D car with the affected area highlighted and repair guides beside it" width="100%">
+</p>
+<p align="center">
+  <img src="docs/screenshots/select.jpg" alt="Customer select screen" width="49%">
+  <img src="docs/screenshots/connecting.jpg" alt="Connecting to the OBD adapter" width="49%">
+</p>
+
 ---
 
 ## What it does
