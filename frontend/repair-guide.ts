@@ -1,0 +1,67 @@
+export const repairModelUrl = '/models/land-cruiser-300-animated.glb';
+
+// Coordinates are in the supplied GLB's model space (metres, Y up, front +Z).
+// This composite has no verified dipstick mesh: arrows identify the engine-bay
+// search area, never a manufacturer-verified dipstick or oil-filler location.
+export const oilCheckSteps = [
+  {
+    id: 'prepare',
+    title: 'Set yourself up safely.',
+    shortTitle: 'Prepare the vehicle',
+    instruction: 'Park on level ground, apply the parking brake, and switch the engine off. Follow your owner’s manual for engine temperature and the waiting time before measuring. Secure the open hood and keep clear of hot parts.',
+    tip: 'Have a clean, lint-free cloth and your vehicle’s owner’s manual within reach.',
+    confirmation: 'Vehicle secure, engine off, hood supported, and the manual’s waiting time has elapsed.',
+    marker: 'Open hood · prepare safely',
+    position: '0 2.45 1.35',
+    target: '0 1.3 0.45',
+    orbit: '30deg 68deg 7.2m',
+  },
+  {
+    id: 'locate',
+    title: 'Find the oil dipstick.',
+    shortTitle: 'Locate the dipstick',
+    instruction: 'Use your vehicle’s engine-compartment diagram to identify the engine oil dipstick. The arrow points into the engine bay as a search cue. Confirm the actual handle on your vehicle before touching anything.',
+    tip: 'This composite model does not verify the dipstick’s exact position. Use the diagram for your engine.',
+    confirmation: 'I have identified the engine oil dipstick using my vehicle’s manual.',
+    marker: 'Engine bay · locate dipstick',
+    position: '0 1.28 1.85',
+    target: '0 1.2 1.6',
+    orbit: '18deg 38deg 3.8m',
+  },
+  {
+    id: 'wipe',
+    title: 'Pull out. Wipe clean.',
+    shortTitle: 'Remove and wipe',
+    instruction: 'Hold the cloth beneath the dipstick tip, withdraw the dipstick, and wipe it clean. Keep the cloth and your hands away from hot surfaces.',
+    tip: 'The first withdrawal clears oil from the dipstick. Take the reading after reinserting it.',
+    confirmation: 'The dipstick is out and wiped clean.',
+    marker: 'Engine bay · remove and wipe',
+    position: '0 1.28 1.85',
+    target: '0 1.18 1.7',
+    orbit: '0deg 35deg 3.4m',
+  },
+  {
+    id: 'read',
+    title: 'Reinsert. Then read.',
+    shortTitle: 'Check the oil level',
+    instruction: 'Seat the dipstick fully in its tube, then withdraw it again with the cloth beneath the tip. Compare the oil trace with the level marks described in your owner’s manual. Repeat if the reading is unclear.',
+    tip: 'Read the actual dipstick. The 3D model does not measure oil or diagnose the engine.',
+    confirmation: 'I have taken a clear reading against the dipstick’s level marks.',
+    marker: 'Engine bay · reinsert and read',
+    position: '0 1.28 1.85',
+    target: '0 1.18 1.7',
+    orbit: '-18deg 35deg 3.4m',
+  },
+  {
+    id: 'finish',
+    title: 'Put everything back.',
+    shortTitle: 'Finish the check',
+    instruction: 'Wipe the dipstick and fully reinsert it. Remove the cloth and any tools. If the level is outside the manual’s permitted range, follow its instructions or ask a service professional before driving. Avoid overfilling.',
+    tip: 'This level covers checking only. Use your exact engine’s manual for oil type, quantity, and any top-up procedure.',
+    confirmation: 'Dipstick fully seated; cloth and tools removed; oil reading reviewed.',
+    marker: 'Engine bay · secure dipstick',
+    position: '0 1.28 1.85',
+    target: '0 1.3 0.45',
+    orbit: '30deg 68deg 7.2m',
+  },
+] as const;
