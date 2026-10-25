@@ -47,6 +47,16 @@ insurance_context = get_insurance_information(
 )
 ```
 
+Run the published Snowflake agent with the mock high-severity case:
+
+```bash
+cd agent-backend
+python test_snowflake_agent.py
+```
+
+Snowflake connection settings are loaded from the repository root `.env`. Copy the
+non-secret configuration names from `.env.example` and keep `SNOWFLAKE_PAT` private.
+
 The agent can call the SERP integration directly after producing its diagnosis:
 
 ```python

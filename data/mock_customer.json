@@ -2,6 +2,7 @@
   {
     "name": "Maya Thompson",
     "description": "A college student who relies on her car to commute to class and work.",
+    "mileage": 84320,
     "insurance_level": "silver",
     "issue": {
       "description": "Low system voltage detected and the battery fails to hold a charge.",
@@ -13,6 +14,7 @@
   {
     "name": "Priya Shah",
     "description": "A hospital nurse who needs reliable transportation for early and overnight shifts.",
+    "mileage": 51247,
     "insurance_level": "platinum",
     "issue": {
       "description": "The passenger door has a cosmetic scratch that needs paint repair.",
@@ -24,6 +26,7 @@
   {
     "name": "Jordan Lee",
     "description": "A delivery driver whose vehicle is used throughout the day for work.",
+    "mileage": 126804,
     "insurance_level": "gold",
     "issue": {
       "description": "The tire-pressure monitoring system reports critically low pressure in one tire.",
@@ -35,6 +38,7 @@
   {
     "name": "Marcus Green",
     "description": "A parent and daily commuter who frequently drives on highways with his family.",
+    "mileage": 67315,
     "insurance_level": "silver",
     "issue": {
       "description": "The supplemental restraint system recorded a front-impact event and reports an airbag fault.",
@@ -46,6 +50,7 @@
   {
     "name": "Alex Rivera",
     "description": "A small-business owner who uses the vehicle for client visits across the city.",
+    "mileage": 91876,
     "insurance_level": "platinum",
     "issue": {
       "description": "The powertrain control module detected an incorrect transmission gear ratio while shifting.",
@@ -57,6 +62,7 @@
   {
     "name": "Elena Brooks",
     "description": "A remote worker who mainly uses her car for errands and weekend trips.",
+    "mileage": 38942,
     "insurance_level": "gold",
     "issue": {
       "description": "The oil-life monitoring system reports that an engine oil change is due.",

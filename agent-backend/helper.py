@@ -29,12 +29,72 @@ def get_customer_information(customer_data: dict[str, object]) -> str:
     return json.dumps(customer_data, indent=2, default=str)
 
 
+async def handle_low_severity(
+    customer_data: dict[str, object],
+    vehicle_data: dict[str, object],
+    diagnostic_data: dict[str, object],
+) -> None:
+    """Placeholder for the low-severity flow."""
+
+
 async def give_recommendations(
     diagnostic_context: str,
-    insurance_context: str | None = None,
+    customer_context: str,
+    insurance_context: str,
 ) -> RecommendationResult:
-    """Generate repair recommendations from the available agent context."""
-    raise NotImplementedError("Connect the diagnostic model here")
+    """Generate high-severity recommendations with the Snowflake agent."""
+    base_url = os.environ["SNOWFLAKE_BASE_URL"].rstrip("/")
+    database = os.environ["SNOWFLAKE_DATABASE"]
+    schema = os.environ["SNOWFLAKE_SCHEMA"]
+    agent = os.environ["SNOWFLAKE_AGENT"]
+
+    prompt = (
+        f"Customer information:\n{customer_context}\n\n"
+        f"OBD and diagnostic information:\n{diagnostic_context}\n\n"
+        f"Insurance policy:\n{insurance_context}\n\n"
+        "Analyze this high-severity case."
+    )
+
+    async with httpx.AsyncClient(timeout=310) as client:
+        response = await client.post(
+            f"{base_url}/api/v2/databases/{database}/schemas/{schema}/agents/{agent}:run",
+            headers={
+                "Authorization": f"Bearer {os.environ['SNOWFLAKE_PAT']}",
+                "X-Snowflake-Authorization-Token-Type": (
+                    "PROGRAMMATIC_ACCESS_TOKEN"
+                ),
+                "X-Snowflake-Role": os.environ["SNOWFLAKE_ROLE"],
+                "Accept": "application/json",
+            },
+            json={
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [{"type": "text", "text": prompt}],
+                    }
+                ],
+                "stream": False,
+            },
+        )
+        if response.is_error:
+            raise RuntimeError(
+                f"Snowflake agent request failed ({response.status_code}): "
+                f"{response.text}"
+            )
+
+    content = response.json().get("content", [])
+    answer = next(
+        (item["text"] for item in reversed(content) if item.get("type") == "text"),
+        None,
+    )
+    if answer is None:
+        raise RuntimeError("Snowflake agent returned no text response")
+
+    answer = answer.strip()
+    if answer.startswith("```"):
+        answer = answer.split("\n", 1)[1].rsplit("```", 1)[0].strip()
+
+    return RecommendationResult.model_validate_json(answer)
 
 
 def give_interaction(
