@@ -1,4 +1,6 @@
+import httpx
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from helper import (
     get_customer_information,
@@ -19,6 +21,13 @@ from service_locations import find_service_locations
 
 
 app = FastAPI(title="Agent Backend", version="0.1.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/customers/{customer_id}")
@@ -43,7 +52,11 @@ async def get_customer(customer_id: str) -> CustomerResponse:
 async def create_diagnostic_session(
     request: DiagnosticSessionRequest,
 ) -> DiagnosticSessionResponse:
-    customer = get_customer_information(request.customer_id)
+    try:
+        customer = get_customer_information(request.customer_id)
+    except ValueError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+
     diagnostic = request.diagnostic or DiagnosticContext(
         issue_code=customer.issue.code,
         vehicle_model=customer.vehicle_model,
@@ -52,10 +65,16 @@ async def create_diagnostic_session(
     severity = customer.issue.severity
 
     if severity == "low":
-        resources = await get_low_severity_resources(
-            issue=customer.issue.description,
-            vehicle_model=diagnostic.vehicle_model,
-        )
+        try:
+            resources = await get_low_severity_resources(
+                issue=customer.issue.description,
+                vehicle_model=diagnostic.vehicle_model,
+            )
+        except (httpx.HTTPError, KeyError) as error:
+            raise HTTPException(
+                status_code=502,
+                detail="The resource search provider is unavailable",
+            ) from error
         response = DiagnosticSessionResponse(
             severity="low",
             resources=resources,
@@ -72,11 +91,17 @@ async def create_diagnostic_session(
         }
     )
 
-    recommendations = await give_recommendations(
-        diagnostic_context=diagnostic_context,
-        customer_context=customer_context,
-        insurance_context=insurance_context,
-    )
+    try:
+        recommendations = await give_recommendations(
+            diagnostic_context=diagnostic_context,
+            customer_context=customer_context,
+            insurance_context=insurance_context,
+        )
+    except (httpx.HTTPError, RuntimeError, KeyError) as error:
+        raise HTTPException(
+            status_code=502,
+            detail="The diagnostic agent is unavailable",
+        ) from error
 
     response = DiagnosticSessionResponse(
         severity="high",
