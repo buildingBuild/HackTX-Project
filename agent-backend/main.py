@@ -5,8 +5,8 @@ from helper import (
     get_device_schematics,
     get_insurance_information,
     give_recommendations,
-    handle_low_severity,
 )
+from low_severity_resources import get_low_severity_resources
 from schemas import (
     DiagnosticContext,
     DiagnosticSessionRequest,
@@ -31,11 +31,14 @@ async def create_diagnostic_session(
     severity = customer.issue.severity
 
     if severity == "low":
-        await handle_low_severity(
-            customer_id=request.customer_id,
-            diagnostic_data=diagnostic.model_dump(),
+        resources = await get_low_severity_resources(
+            issue=customer.issue.description,
+            vehicle_model=diagnostic.vehicle_model,
         )
-        response = DiagnosticSessionResponse(severity="low")
+        response = DiagnosticSessionResponse(
+            severity="low",
+            resources=resources,
+        )
         print(response.model_dump_json(indent=2))
         return response
 

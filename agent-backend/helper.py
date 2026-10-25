@@ -48,13 +48,6 @@ def get_customer_information(customer_id: str) -> CustomerInformation:
     return CustomerInformation.model_validate(customer)
 
 
-async def handle_low_severity(
-    customer_id: str,
-    diagnostic_data: dict[str, object],
-) -> None:
-    pass
-
-
 async def give_recommendations(
     diagnostic_context: str,
     customer_context: str,

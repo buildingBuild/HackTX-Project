@@ -69,6 +69,19 @@ class PartSearchResult(BaseModel):
     listings: list[PartListing]
 
 
+class Resource(BaseModel):
+    title: str
+    link: str
+    snippet: str | None = None
+    thumbnail: str | None = None
+    source: str | None = None
+
+
+class LowSeverityResources(BaseModel):
+    articles: list[Resource]
+    videos: list[Resource]
+
+
 class CostEstimate(BaseModel):
     currency: str
     estimated_repair_cost: float | None
@@ -98,3 +111,4 @@ class DiagnosticSessionResponse(BaseModel):
     severity: Literal["low", "high"]
     recommendations: RecommendationResult | None = None
     part_searches: list[PartSearchResult] = Field(default_factory=list)
+    resources: LowSeverityResources | None = None
