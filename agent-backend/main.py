@@ -5,7 +5,7 @@ from schemas import HealthResponse, RootResponse
 app = FastAPI(title="Agent Backend", version="0.1.0")
 
 
-@app.get("/")
+@app.post("/diagnostic-sessions")
 async def root() -> RootResponse:
     return RootResponse(message="Agent backend is running")
 

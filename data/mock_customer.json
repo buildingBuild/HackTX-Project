@@ -1,0 +1,68 @@
+[
+  {
+    "name": "Maya Thompson",
+    "description": "A college student who relies on her car to commute to class and work.",
+    "insurance_level": "silver",
+    "issue": {
+      "description": "Low system voltage detected and the battery fails to hold a charge.",
+      "code": "P0562",
+      "severity": "low"
+    },
+    "location": "Austin, TX"
+  },
+  {
+    "name": "Priya Shah",
+    "description": "A hospital nurse who needs reliable transportation for early and overnight shifts.",
+    "insurance_level": "platinum",
+    "issue": {
+      "description": "The passenger door has a cosmetic scratch that needs paint repair.",
+      "code": "BODY-SCRATCH",
+      "severity": "low"
+    },
+    "location": "San Antonio, TX"
+  },
+  {
+    "name": "Jordan Lee",
+    "description": "A delivery driver whose vehicle is used throughout the day for work.",
+    "insurance_level": "gold",
+    "issue": {
+      "description": "The tire-pressure monitoring system reports critically low pressure in one tire.",
+      "code": "TPMS-LOW-PRESSURE",
+      "severity": "low"
+    },
+    "location": "Dallas, TX"
+  },
+  {
+    "name": "Marcus Green",
+    "description": "A parent and daily commuter who frequently drives on highways with his family.",
+    "insurance_level": "silver",
+    "issue": {
+      "description": "The supplemental restraint system recorded a front-impact event and reports an airbag fault.",
+      "code": "B1650",
+      "severity": "high"
+    },
+    "location": "Fort Worth, TX"
+  },
+  {
+    "name": "Alex Rivera",
+    "description": "A small-business owner who uses the vehicle for client visits across the city.",
+    "insurance_level": "platinum",
+    "issue": {
+      "description": "The powertrain control module detected an incorrect transmission gear ratio while shifting.",
+      "code": "P0730",
+      "severity": "high"
+    },
+    "location": "Houston, TX"
+  },
+  {
+    "name": "Elena Brooks",
+    "description": "A remote worker who mainly uses her car for errands and weekend trips.",
+    "insurance_level": "gold",
+    "issue": {
+      "description": "The oil-life monitoring system reports that an engine oil change is due.",
+      "code": "MAINT-OIL-LIFE",
+      "severity": "low"
+    },
+    "location": "Round Rock, TX"
+  }
+]

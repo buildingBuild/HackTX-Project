@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -27,3 +29,17 @@ class PartListing(BaseModel):
 class PartSearchResult(BaseModel):
     part: str
     listings: list[PartListing]
+
+
+class RecommendationResult(BaseModel):
+    summary: str
+    recommendations: list[str]
+    required_parts: list[str]
+    urgency: Literal["low", "medium", "high", "critical"]
+
+
+class InteractionSetup(BaseModel):
+    vehicle_model: str
+    model_url: str | None = None
+    highlighted_parts: list[str]
+    annotations: list[str]

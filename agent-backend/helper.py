@@ -1,11 +1,48 @@
+import json
 import os
 
 import httpx
 from dotenv import load_dotenv
-from schemas import PartListing, PartSearchResult
+from schemas import (
+    InteractionSetup,
+    PartListing,
+    PartSearchResult,
+    RecommendationResult,
+)
 
 
 load_dotenv()
+
+
+def get_device_schematics(obd_data: dict[str, object]) -> str:
+    """Format OBD scanner data as context for the diagnostic agent."""
+    return json.dumps(obd_data, indent=2, default=str)
+
+
+def get_insurance_information(insurance_data: dict[str, object]) -> str:
+    """Format insurance data as context for the diagnostic agent."""
+    return json.dumps(insurance_data, indent=2, default=str)
+
+
+def get_customer_information(customer_data: dict[str, object]) -> str:
+    """Format customer data as context for the diagnostic agent."""
+    return json.dumps(customer_data, indent=2, default=str)
+
+
+async def give_recommendations(
+    diagnostic_context: str,
+    insurance_context: str | None = None,
+) -> RecommendationResult:
+    """Generate repair recommendations from the available agent context."""
+    raise NotImplementedError("Connect the diagnostic model here")
+
+
+def give_interaction(
+    vehicle_model: str,
+    recommendations: RecommendationResult,
+) -> InteractionSetup:
+    """Build the 3D vehicle configuration consumed by the frontend."""
+    raise NotImplementedError("Connect the frontend 3D model setup here")
 
 
 async def search_parts(
