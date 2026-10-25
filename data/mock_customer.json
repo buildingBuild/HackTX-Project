@@ -11,6 +11,12 @@
       "code": "P0562",
       "severity": "low"
     },
+    "technician_diagnosis": {
+      "confirmed_diagnosis": "The 12-volt battery has failed and cannot hold a charge.",
+      "estimated_repair_cost": 220,
+      "currency": "USD",
+      "technician_findings": "The charging system passed testing, and there is no evidence of neglect."
+    },
     "location": "Austin, TX"
   },
   {
@@ -24,6 +30,12 @@
       "description": "The passenger door has a cosmetic scratch that needs paint repair.",
       "code": "BODY-SCRATCH",
       "severity": "low"
+    },
+    "technician_diagnosis": {
+      "confirmed_diagnosis": "The passenger door has minor clear-coat and paint damage with no structural damage.",
+      "estimated_repair_cost": 450,
+      "currency": "USD",
+      "technician_findings": "The damage is cosmetic and limited to the passenger-door finish."
     },
     "location": "San Antonio, TX"
   },
@@ -39,6 +51,12 @@
       "code": "TPMS-LOW-PRESSURE",
       "severity": "low"
     },
+    "technician_diagnosis": {
+      "confirmed_diagnosis": "A road-hazard puncture damaged the tire beyond safe repair.",
+      "estimated_repair_cost": 260,
+      "currency": "USD",
+      "technician_findings": "The remaining tires have serviceable tread, and there is no evidence of neglect."
+    },
     "location": "Dallas, TX"
   },
   {
@@ -52,6 +70,12 @@
       "description": "The supplemental restraint system recorded a front-impact event and reports an airbag fault.",
       "code": "B1650",
       "severity": "high"
+    },
+    "technician_diagnosis": {
+      "confirmed_diagnosis": "The front-impact event damaged SRS components that require replacement and calibration.",
+      "estimated_repair_cost": 2400,
+      "currency": "USD",
+      "technician_findings": "The damage resulted from the collision, with no evidence of neglect or prior tampering."
     },
     "location": "Fort Worth, TX"
   },
@@ -67,6 +91,12 @@
       "code": "P0730",
       "severity": "high"
     },
+    "technician_diagnosis": {
+      "confirmed_diagnosis": "The CVT has an internal mechanical failure and requires replacement.",
+      "estimated_repair_cost": 4200,
+      "currency": "USD",
+      "technician_findings": "There is no evidence of neglect, fluid contamination, or missed maintenance."
+    },
     "location": "Houston, TX"
   },
   {
@@ -80,6 +110,12 @@
       "description": "The oil-life monitoring system reports that an engine oil change is due.",
       "code": "MAINT-OIL-LIFE",
       "severity": "low"
+    },
+    "technician_diagnosis": {
+      "confirmed_diagnosis": "The vehicle is due for a routine engine oil and filter change.",
+      "estimated_repair_cost": 95,
+      "currency": "USD",
+      "technician_findings": "No oil leak or engine fault was found; this is scheduled maintenance."
     },
     "location": "Round Rock, TX"
   }
