@@ -19,6 +19,13 @@ class CustomerIssue(BaseModel):
     severity: Literal["low", "high"]
 
 
+class TechnicianDiagnosis(BaseModel):
+    confirmed_diagnosis: str
+    estimated_repair_cost: float
+    currency: str
+    technician_findings: str
+
+
 class CustomerInformation(BaseModel):
     id: str
     name: str
@@ -27,6 +34,7 @@ class CustomerInformation(BaseModel):
     mileage: int
     insurance_level: InsuranceLevel
     issue: CustomerIssue
+    technician_diagnosis: TechnicianDiagnosis
     location: str
 
 
@@ -34,12 +42,11 @@ class DiagnosticContext(BaseModel):
     issue_code: str
     vehicle_model: str
     mileage: int
-    severity: Literal["low", "high"]
 
 
 class DiagnosticSessionRequest(BaseModel):
     customer_id: str
-    diagnostic: DiagnosticContext
+    diagnostic: DiagnosticContext | None = None
 
 
 class PartListing(BaseModel):
@@ -75,7 +82,12 @@ class RecommendationResult(BaseModel):
     summary: str
     urgency: Literal["low", "high"]
     safe_to_drive: bool
-    coverage_status: Literal["covered", "not_covered", "unclear"]
+    coverage_status: Literal[
+        "covered",
+        "not_covered",
+        "unclear",
+        "undetermined",
+    ]
     coverage_explanation: str
     cost: CostEstimate
     recommendations: list[str]

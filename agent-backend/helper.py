@@ -25,11 +25,15 @@ def get_device_schematics(obd_data: dict[str, object]) -> str:
 
 def get_insurance_information(insurance_level: InsuranceLevel) -> str:
     policy = INSURANCE_FILE.read_text()
-    heading = f"## {insurance_level.title()}"
-    start = policy.index(heading)
-    end = policy.find("\n## ", start + len(heading))
+    start = policy.index("## Silver")
+    next_level = {
+        "silver": "## Gold",
+        "gold": "## Platinum",
+        "platinum": None,
+    }[insurance_level]
+    end = policy.index(next_level) if next_level else len(policy)
 
-    return policy[start:end].strip() if end != -1 else policy[start:].strip()
+    return policy[start:end].strip()
 
 
 def get_customer_information(customer_id: str) -> CustomerInformation:

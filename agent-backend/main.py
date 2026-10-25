@@ -6,9 +6,9 @@ from helper import (
     get_insurance_information,
     give_recommendations,
     handle_low_severity,
-    search_parts,
 )
 from schemas import (
+    DiagnosticContext,
     DiagnosticSessionRequest,
     DiagnosticSessionResponse,
     HealthResponse,
@@ -22,17 +22,31 @@ app = FastAPI(title="Agent Backend", version="0.1.0")
 async def create_diagnostic_session(
     request: DiagnosticSessionRequest,
 ) -> DiagnosticSessionResponse:
-    if request.diagnostic.severity == "low":
+    customer = get_customer_information(request.customer_id)
+    diagnostic = request.diagnostic or DiagnosticContext(
+        issue_code=customer.issue.code,
+        vehicle_model=customer.vehicle_model,
+        mileage=customer.mileage,
+    )
+    severity = customer.issue.severity
+
+    if severity == "low":
         await handle_low_severity(
             customer_id=request.customer_id,
-            diagnostic_data=request.diagnostic.model_dump(),
+            diagnostic_data=diagnostic.model_dump(),
         )
-        return DiagnosticSessionResponse(severity="low")
+        response = DiagnosticSessionResponse(severity="low")
+        print(response.model_dump_json(indent=2))
+        return response
 
-    customer = get_customer_information(request.customer_id)
     customer_context = customer.model_dump_json(indent=2)
     insurance_context = get_insurance_information(customer.insurance_level)
-    diagnostic_context = get_device_schematics(request.diagnostic.model_dump())
+    diagnostic_context = get_device_schematics(
+        {
+            "obd_data": diagnostic.model_dump(),
+            "technician_diagnosis": customer.technician_diagnosis.model_dump(),
+        }
+    )
 
     recommendations = await give_recommendations(
         diagnostic_context=diagnostic_context,
@@ -40,16 +54,12 @@ async def create_diagnostic_session(
         insurance_context=insurance_context,
     )
 
-    part_searches = await search_parts(
-        parts=recommendations.required_parts,
-        car_model=request.diagnostic.vehicle_model,
-    )
-
-    return DiagnosticSessionResponse(
+    response = DiagnosticSessionResponse(
         severity="high",
         recommendations=recommendations,
-        part_searches=part_searches,
     )
+    print(response.model_dump_json(indent=2))
+    return response
 
 
 @app.get("/3d-visualization/{customer_id}")
