@@ -1,5 +1,6 @@
 import os
 import serpapi
+import re
 
 def get_toyota_vehicle_guidance(issue: str, make: str = "Toyota", model: str = "Camry") -> dict:
     """
@@ -34,28 +35,68 @@ def get_toyota_vehicle_guidance(issue: str, make: str = "Toyota", model: str = "
     # Removed the blanket try/except so you can see the real error message
     results = client.search(params)
     return results    
+def synthesize_clean_text(response) -> str:
+    """
+    Takes the SerpApi response object/dictionary and outputs clean, 
+    formatted text ready for printing, logging, or terminal output.
+    """
+    # Convert response to dictionary if it's a client wrapper object
+    if hasattr(response, "as_dict"):
+        res_dict = response.as_dict()
+    elif isinstance(response, dict):
+        res_dict = response
+    else:
+        res_dict = dict(response)
+
+    markdown_text = res_dict.get("reconstructed_markdown", "")
+    references = res_dict.get("references", [])
+
+    # Fallback to text_blocks if reconstructed_markdown is empty
+    if not markdown_text and "text_blocks" in res_dict:
+        lines = []
+        for block in res_dict["text_blocks"]:
+            b_type = block.get("type")
+            snippet = block.get("snippet", "")
+            if b_type == "paragraph":
+                lines.append(snippet)
+            elif b_type == "heading":
+                lines.append(f"\n### {snippet}")
+            elif b_type == "list":
+                for item in block.get("list", []):
+                    lines.append(f"  • {item.get('snippet', '')}")
+        markdown_text = "\n".join(lines)
+
+    # Clean up escaped markdown characters (e.g., '\-' becomes '-')
+    clean_text = re.sub(r'\\([_#*\[\]\-\(\)])', r'\1', markdown_text)
+
+    # Format and append references cleanly at the bottom
+    if references:
+        clean_text += "\n\n============================\n"
+        clean_text += "VERIFIED SOURCES & REFERENCES\n"
+        clean_text += "============================\n"
+        for ref in references:
+            idx = ref.get("index", 0)
+            title = ref.get("title", "Source")
+            link = ref.get("link", "#")
+            snippet = ref.get("snippet", "")
+            clean_text += f"[{idx}] {title}\n"
+            clean_text += f"    URL: {link}\n"
+            if snippet:
+                clean_text += f"    Summary: {snippet}\n"
+            clean_text += "\n"
+
+    return clean_text
+
 # ==========================================
-# Example Usage:
+# Execution Example
 # ==========================================
 if __name__ == "__main__":
-    # Example: Diagnosing a specific issue on a Toyota RAV4
-    vehicle_issue = "hesitation and surging during acceleration"
-    vehicle_model = "RAV4"
+    issue = "hesitation and surging during acceleration"
+    model = "RAV4"
     
-    print(f"Querying SerpApi Google AI Mode for 2026 Toyota {vehicle_model} issue: '{vehicle_issue}'...")
+    print(f"Fetching guidance for Toyota {model}: '{issue}'...\n")
+    response = get_toyota_vehicle_guidance(issue=issue, model=model)
     
-    response = get_toyota_vehicle_guidance(issue=vehicle_issue, model=vehicle_model)
-    
-    # Print out summary metadata or generated results
-    if response:
-        print("\n--- Search Metadata ---")
-        print(response.get("search_metadata", {}))
-        
-        print("\n--- AI Generated Content / References ---")
-        # Depending on the exact payload returned by the AI Mode engine:
-        if "answer_box" in response:
-            print(response["answer_box"])
-        else:
-            print("Response fetched successfully. Check keys for structured content blocks.")
-    else:
-        print("No results returned.")
+    # Generate the clean text output
+    formatted_output = synthesize_clean_text(response)
+    print(formatted_output)
