@@ -1,4 +1,5 @@
 import express from 'express';
+import { createServer } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 const frontendRoot = fileURLToPath(new URL('../../', import.meta.url));
@@ -6,8 +7,11 @@ const insuranceSource = fileURLToPath(new URL('../insurance-data/sources/toyota-
 import { profiles,evaluate } from './engine.ts';
 import { insuranceCatalog } from '../insurance-data/catalog.ts';
 import { compareQuotes,coverageLevels } from './insurance.ts';
+import { answerChat } from './chat.ts';
+import { attachChatSocket } from './chat-socket.ts';
 const app=express(); app.use(express.json({limit:'16kb'}));
 app.get('/api/health',(_req,res)=>res.json({status:'ok',mode:'synthetic-demo'}));
+app.post('/api/chat',(req,res)=>{try{res.json(answerChat(req.body))}catch(e){res.status(400).json({error:e instanceof Error?e.message:'Could not answer this question.'})}});
 app.get('/api/insurance',(_req,res)=>res.json({...insuranceCatalog,coverageLevels}));
 app.get('/api/insurance/source/toyota',(_req,res)=>res.sendFile(insuranceSource));
 app.post('/api/insurance/compare',(req,res)=>{try{res.json(compareQuotes(req.body))}catch(e){res.status(400).json({error:e instanceof Error?e.message:'Invalid comparison'})}});
@@ -16,4 +20,6 @@ app.post('/api/evaluate',(req,res)=>{try {const {id,mileage,budget,estimate,symp
 app.get('/api/dealers',(_req,res)=>res.json({source:'Synthetic Austin demo fixtures; not live search results',dealers:[{id:'north',name:'North Austin service center',address:'Austin, TX · illustrative location',distance:'Nearby',hours:'Confirm hours with provider'},{id:'south',name:'South Austin service center',address:'Austin, TX · illustrative location',distance:'Nearby',hours:'Confirm hours with provider'}]}));
 if(process.env.NODE_ENV==='production'){app.use(express.static(path.join(frontendRoot, 'dist')));app.get('/{*path}',(_req,res)=>res.sendFile(path.join(frontendRoot, 'dist/index.html')));}
 const port=Number(process.env.PORT??3001);
-app.listen(port,'0.0.0.0',()=>console.log(`Heads Up listening on ${port}`));
+const server=createServer(app);
+attachChatSocket(server);
+server.listen(port,'0.0.0.0',()=>console.log(`Heads Up listening on ${port}`));
