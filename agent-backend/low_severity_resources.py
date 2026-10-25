@@ -18,7 +18,7 @@ async def get_low_severity_resources(
             params={
                 "api_key": os.environ["SERPAPI_KEY"],
                 "engine": "google",
-                "q": f"{vehicle_model} {issue} troubleshooting repair guide",
+                "q": f"{vehicle_model} {issue} troubleshooting repair guide from trusted Toyota sources like the {vehicle_model} manuel, toyotanation.com, and rav4world.com",
             },
         )
         response.raise_for_status()
