@@ -1,3 +1,5 @@
+import { LAND_CRUISER_MODELS, repairGuideFor } from './repair';
+
 export type Flags = { viz: boolean; loc: boolean; diag: boolean };
 
 export type LogEntry = {
@@ -8,8 +10,8 @@ export type LogEntry = {
   t0: number;
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-const CUSTOMER_IDS = ['c01', 'c02', 'c03', 'c04', 'c05', 'c06', 'c07'];
+export const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+const CUSTOMER_IDS = ['c01', 'c02', 'c03', 'c04', 'c05', 'c06', 'c07', 'c08'];
 
 let log: LogEntry[] = [];
 const listeners = new Set<() => void>();
@@ -49,13 +51,15 @@ async function request<T>(method: string, path: string, init?: RequestInit): Pro
 const VEHICLE_COLORS = ['#e9ecf0', '#aeb4bd', '#355b78', '#28313c', '#8d949d', '#b3202a', '#d6d9de'];
 
 function vehicleFromModel(vehicleModel: string, mileage: number, index = 0) {
-  const [year = '', make = '', model = '', ...trim] = vehicleModel.split(' ');
-  const body = /sienna|escape|tucson|cx-5|rav4|highlander|odyssey|pacifica/i.test(vehicleModel) ? 'minivan' : 'sedan';
+  const [year = '', make = '', shortModel = '', ...trim] = vehicleModel.split(' ');
+  const landCruiser = /land cruiser 300/i.test(vehicleModel);
+  const model = landCruiser ? 'Land Cruiser 300' : shortModel;
+  const body = landCruiser ? 'suv' : /sienna|escape|tucson|cx-5|rav4|highlander|odyssey|pacifica/i.test(vehicleModel) ? 'minivan' : 'sedan';
   return {
     year,
     make,
     model,
-    trim: trim.join(' '),
+    trim: landCruiser ? trim.slice(2).join(' ') : trim.join(' '),
     body,
     color: body === 'minivan' ? 'Silver' : 'Pearl White',
     hex: VEHICLE_COLORS[index % VEHICLE_COLORS.length],
@@ -79,6 +83,7 @@ export const OBD: Record<string, { issueCode: string; vehicleModel: string; mile
   c05: { issueCode: 'P0730', vehicleModel: '2019 Toyota Corolla SE', mileage: 91876 },
   c06: { issueCode: 'MAINT-OIL-LIFE', vehicleModel: '2022 Toyota Camry LE', mileage: 38942 },
   c07: { issueCode: 'C1391', vehicleModel: '2021 Toyota Avalon Limited', mileage: 76418 },
+  c08: { issueCode: 'MAINT-AIR-FILTER', vehicleModel: '2022 Toyota Land Cruiser 300 VX.R', mileage: 32480 },
 };
 
 export const VIZ: Record<string, any> = {
@@ -98,7 +103,10 @@ export const VIZ: Record<string, any> = {
   },
 };
 
+VIZ.suv = { ...VIZ.minivan, bodyType: 'suv', length: 4.985, width: 1.98, height: 1.945, roofY: 1.945, trunkLabel: 'Tailgate' };
+
 export const PARTS: Record<string, [string, string]> = {
+  engine: ['Engine bay', 'Engine'],
   front_bumper: ['Front bumper', 'Body'], grille: ['Grille', 'Body'], hood: ['Hood', 'Body'],
   headlight_l: ['Left headlight', 'Lighting'], headlight_r: ['Right headlight', 'Lighting'],
   fender_fl: ['Front left fender', 'Body'], fender_fr: ['Front right fender', 'Body'],
@@ -117,6 +125,7 @@ const AFFECTED_PARTS: Record<string, string[]> = {
   B1650: ['front_bumper'],
   P0730: ['hood'],
   'MAINT-OIL-LIFE': ['hood'],
+  'MAINT-AIR-FILTER': ['hood'],
   C1391: ['wheel_fl', 'wheel_fr'],
 };
 
@@ -134,12 +143,14 @@ function diagnosticView(payload: any, customer: any, obd: any) {
   const dtcs = [{ code: obd.issueCode, desc: 'Vehicle diagnostic issue code', status: 'Active' }];
 
   if (payload.severity === 'low') {
+    const guide = repairGuideFor(customer.vehicle_model, obd.issueCode, payload.severity);
     return {
       severity: 'low',
-      headline: 'Helpful guidance is ready',
-      summary: `The ${obd.issueCode} issue is low severity. Review the resources below before deciding on the next step.`,
+      headline: guide ? 'Your air filter needs a refresh' : 'Helpful guidance is ready',
+      summary: guide ? 'Routine maintenance, with a little guidance. Follow the 3D walkthrough to replace a dirty engine air filter. This demo assumes a technician has ruled out an engine fault.' : `The ${obd.issueCode} issue is low severity. Review the resources below before deciding on the next step.`,
+      guide,
       dtcs,
-      findings: [{ partId: affectedParts[0], title: `Issue ${obd.issueCode}`, detail: 'The connected diagnostic profile marked this as a low-severity issue.' }],
+      findings: [{ partId: affectedParts[0], title: guide ? 'Engine air-filter service' : `Issue ${obd.issueCode}`, detail: guide ? 'Demo technician finding: dirty engine air filter; routine replacement due.' : 'The connected diagnostic profile marked this as a low-severity issue.' }],
       affectedParts,
       resources: {
         videos: (payload.resources?.videos || []).map((item: any) => ({ ...item, url: item.link })),
@@ -193,11 +204,12 @@ export const api = {
     return settled.flatMap((result, index) => result.status === 'fulfilled' ? [customerView(result.value, index)] : []);
   },
 
-  async postDiagnosticSession(customer: any, flags: Flags) {
+  async postDiagnosticSession(customer: any, flags: Flags, signal?: AbortSignal) {
     if (flags.diag) throw new Error('Demo diagnostic failure');
     const obd = OBD[customer.id];
     const payload = await request<any>('POST', '/diagnostic-sessions', {
       method: 'POST',
+      signal,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         customer_id: customer.id,
@@ -214,11 +226,12 @@ export const api = {
   async getVehicleVisualization(customer: any, flags: Flags) {
     if (flags.viz) throw new Error('Demo visualization failure');
     const response = await request<any>('GET', `/3d-visualization/${customer.id}`);
+    const landCruiser = /land cruiser 300/i.test(customer.vehicle_model);
     return {
       customerId: customer.id,
       label: customer.vehicle_model,
-      // Backend model wins; otherwise sedans use the bundled Camry and SUVs/vans use the built-in van.
-      modelUrl: response?.model_url || (customer.vehicle.body === 'sedan' ? '/models/camry.glb' : undefined),
+      modelUrl: response?.model_url || (landCruiser ? LAND_CRUISER_MODELS.base : customer.vehicle.body === 'sedan' ? '/models/camry.glb' : undefined),
+      openHoodModelUrl: landCruiser ? response?.open_hood_model_url || LAND_CRUISER_MODELS.engine : undefined,
       spec: { color: customer.vehicle.hex, ...VIZ[customer.vehicle.body] },
     };
   },

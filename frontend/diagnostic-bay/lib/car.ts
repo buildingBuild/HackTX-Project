@@ -14,6 +14,35 @@ export type CarPart = {
 };
 export type BuiltCar = { group: THREE.Group; parts: Record<string, CarPart> };
 
+/** Normalize both supplied assets using their length, not their height: the
+ * open hood increases height but must not shrink the rest of the vehicle. */
+export function prepareGltfCar(scene: THREE.Object3D, spec: any): BuiltCar {
+  const root = scene.clone(true);
+  const size = new THREE.Box3().setFromObject(root).getSize(new THREE.Vector3());
+  if (size.z > size.x) root.rotation.y = Math.PI / 2;
+  const wrap = new THREE.Group(); wrap.add(root);
+  const bounds = new THREE.Box3().setFromObject(wrap), dimensions = bounds.getSize(new THREE.Vector3()), center = bounds.getCenter(new THREE.Vector3());
+  const scale = spec.length / Math.max(dimensions.x, 0.001);
+  wrap.scale.setScalar(scale); wrap.position.set(-center.x * scale, -bounds.min.y * scale, -center.z * scale);
+  const outer = new THREE.Group(); outer.add(wrap);
+  const built = mapGltfParts(outer, spec);
+  built.group.updateMatrixWorld(true);
+  return built;
+}
+
+export function createHoodPivot(built: BuiltCar): THREE.Group | null {
+  const meshes = built.parts.hood?.meshes;
+  if (!meshes?.length) return null;
+  built.group.updateMatrixWorld(true);
+  const bounds = new THREE.Box3();
+  meshes.forEach((mesh) => bounds.union(new THREE.Box3().setFromObject(mesh)));
+  const pivot = new THREE.Group();
+  pivot.position.set(bounds.min.x, bounds.min.y + 0.015, 0);
+  built.group.add(pivot);
+  meshes.forEach((mesh) => pivot.attach(mesh));
+  return pivot;
+}
+
 function carShape(S: any) {
   const hx = S.length / 2, Wh = S.width / 2, R = S.wheelRadius, sill = R - 0.02, arcR = R + 0.075;
   const spline = (pts: number[][], x: number) => {
@@ -210,6 +239,15 @@ function sideOf(n: string): 'l' | 'r' | null {
   return null;
 }
 export function partIdForName(name: string): string | null {
+  // The supplied LC300 exporter uses B/F and BL/BR/FL/FR rather than words.
+  const corner = name.match(/(?:door|wheel|tyre|tire)[_:\s-]+(bl|br|fl|fr)(?:_|\b)/i);
+  if (corner) {
+    const position = corner[1].toLowerCase().replace('b', 'r');
+    return `${/door/i.test(name) ? 'door' : 'wheel'}_${position}`;
+  }
+  if (/engine_scan|sm_engine|engine_bay/i.test(name)) return 'engine';
+  if (/bumper_b(?:_|\b)/i.test(name)) return 'rear_bumper';
+  if (/bumper_f(?:_|\b)/i.test(name)) return 'front_bumper';
   const n = name.toLowerCase(), s = sideOf(name), fr = /front|frnt|\bf\b|_f_/.test(n) ? 'f' : /rear|back|\br\b|_r_/.test(n) ? 'r' : null;
   if (/bumper/.test(n)) return fr === 'r' ? 'rear_bumper' : 'front_bumper';
   if (/grill/.test(n)) return 'grille';

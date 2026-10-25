@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { Bay, Tab } from '@/lib/useBay';
 import { money, OBD, PARTS, partName } from '@/lib/api';
 import { Icon } from './icons';
+import RepairGuide, { RepairIntro } from './RepairGuide';
 
 const TAB_TITLE: Record<string, string> = {
   diagnosis: 'Diagnosis', insurance: 'Insurance', nearby: 'Nearby help', claim: 'Claim', vehicle: 'Vehicle',
@@ -122,10 +123,12 @@ function Diagnosis({ bay }: { bay: Bay }) {
   const faultCodes = <div className="sec"><h3>OBD issue</h3><div className="card2"><table className="table"><tbody>{session.dtcs.map((item: any) => <tr key={item.code}><td className="mono" style={{ width: 120, color: 'var(--yellow)' }}>{item.code}</td><td style={{ textAlign: 'left', color: '#c3cad8' }}>{item.status}</td></tr>)}</tbody></table></div></div>;
 
   if (session.severity === 'low') {
+    if (bay.guide && bay.repair.active) return <RepairGuide bay={bay} />;
     return (
       <>
         {back}
         <div className="sec"><span className="pill ok">Low severity</span><h2>{session.headline}</h2><p>{session.summary}</p></div>
+        <RepairIntro bay={bay} />
         <div className="sec"><h3>Videos</h3>{session.resources.videos.length ? <div className="res-videos">{session.resources.videos.map((item: any) => (
           <a className="rv" key={item.link} href={item.url} target="_blank" rel="noopener noreferrer">
             <div className="rv-th">{item.thumbnail ? <img src={item.thumbnail} alt="" loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none'; }} /> : null}<span className="rv-play">{Icon.play}</span>{item.duration && <em>{item.duration}</em>}</div>

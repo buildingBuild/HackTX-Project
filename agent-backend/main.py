@@ -15,12 +15,17 @@ from schemas import (
     DiagnosticSessionRequest,
     DiagnosticSessionResponse,
     HealthResponse,
+    LowSeverityResources,
+    Resource,
     ServiceLocationsResponse,
+    VehicleVisualizationResponse,
 )
 from service_locations import find_service_locations
+from sensor_gateway import router as sensor_router
 
 
 app = FastAPI(title="Agent Backend", version="0.1.0")
+app.include_router(sensor_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -65,6 +70,23 @@ async def create_diagnostic_session(
     severity = customer.issue.severity
 
     if severity == "low":
+        # The bundled walkthrough is a deterministic demo; it does not need a
+        # search-provider key to demonstrate a routine maintenance session.
+        if customer.id == "c08" and customer.issue.code == "MAINT-AIR-FILTER":
+            if diagnostic.issue_code != customer.issue.code or diagnostic.vehicle_model != customer.vehicle_model:
+                raise HTTPException(status_code=422, detail="The bundled demo supports only this Land Cruiser profile's air-filter maintenance code and vehicle.")
+            return DiagnosticSessionResponse(
+                severity="low",
+                resources=LowSeverityResources(
+                    videos=[],
+                    articles=[Resource(
+                        title="Toyota owner manuals — confirm your engine and air-cleaner layout",
+                        link="https://www.toyota.ae/en/owners/owners-manual/",
+                        source="Toyota",
+                        snippet="Use the manual for your exact vehicle and engine before following the illustrative walkthrough.",
+                    )],
+                ),
+            )
         try:
             resources = await get_low_severity_resources(
                 issue=customer.issue.description,
@@ -112,10 +134,19 @@ async def create_diagnostic_session(
 
 
 @app.get("/3d-visualization/{customer_id}")
-async def prepare_3d_visualization(customer_id: str) -> None:
-    customer = get_customer_information(customer_id)
-    vehicle_model = customer.vehicle_model
-    mileage = customer.mileage
+async def prepare_3d_visualization(customer_id: str) -> VehicleVisualizationResponse:
+    try:
+        customer = get_customer_information(customer_id)
+    except ValueError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    land_cruiser = "land cruiser 300" in customer.vehicle_model.lower()
+    return VehicleVisualizationResponse(
+        customer_id=customer.id,
+        vehicle_model=customer.vehicle_model,
+        mileage=customer.mileage,
+        model_url="/models/land-cruiser-300.glb" if land_cruiser else None,
+        open_hood_model_url="/models/land-cruiser-300-open-hood.glb" if land_cruiser else None,
+    )
 
 
 @app.get("/service-locations")
